@@ -2,20 +2,20 @@
 
 
 [[projects]]
-  name = "github.com/gorilla/context"
+  name = "github.com/natefinch/lumberjack"
   packages = ["."]
-  revision = "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
-  version = "v1.1.1"
+  revision = "a96e63847dc3c67d17befa69c303767e2f84e54f"
+  version = "v2.1"
 
 [[projects]]
-  name = "github.com/gorilla/mux"
+  name = "github.com/sirupsen/logrus"
   packages = ["."]
-  revision = "e3702bed27f0d39777b0b37b664b6280e8ef8fbf"
-  version = "v1.6.2"
+  revision = "418b41d23a1bf978c06faea5313ba194650ac088"
+  version = "v0.8.7"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4212248b7f50201de7dd825b9603236a5a9ea952519be13b46e30544213de809"
+  inputs-digest = "b546f32a9f94ed751c1c6da4b69a7f8d801452b949e7665cdef27986bdeb49bb"
   solver-name = "gps-cdcl"
   solver-version = 1
