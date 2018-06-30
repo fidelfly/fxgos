@@ -26,3 +26,7 @@
 [[constraint]]
   name = "github.com/natefinch/lumberjack"
   version = "2.1.0"
+
+[[constraint]]
+  name = "github.com/BurntSushi/toml"
+  version = "0.3.0"
