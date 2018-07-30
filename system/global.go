@@ -1,5 +1,6 @@
 package system
+
 var UserCache *MemCache
 
-const TokenPath  = "/admin/token"
-const ProtectedPrefix  = "/admin"
+const TokenPath  = "/fxgos/token"
+const ProtectedPrefix  = "/fxgos"

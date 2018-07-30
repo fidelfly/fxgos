@@ -2,8 +2,8 @@ Version = "0.1.0"
 
 [Runtime]
 LogLevel = "info" #warning
-LogPath = "../../output/logs"
-LogFile = "m18aws.log"
+LogPath = "./output/logs"
+LogFile = "fxgos.log"
 MaxSize = 1
 Stdout = true
 WebPath = ""
@@ -13,17 +13,16 @@ Port = "8080"
 [Database]
 Host = "127.0.0.1"
 Port = "3306"
-Schema = "m18awsadmin"
-User = "m18aws"
-Password = "m18aws@7jiaj"
+Schema = "fxgosdb"
+User = "fxgos"
+Password = "fxgos@lyismydg"
 
 [Oauth2]
     [[Oauth2.Client]]
-    ID = "awsadmin"
-    Secret = "awsadmin123456"
+    ID = "fxras"
+    Secret = "fxras123456"
     Domain = "https://127.0.0.1:3000"
 
-    [[Oauth2.Client]]
-    ID = "m18saas"
-    Secret = "m18saas123456"
-    Domain = "https://127.0.0.1:8080"
+[TLS]
+CertFile = "../tls/server/server.crt"
+KeyFile = "../tls/server/server.key"

@@ -43,6 +43,12 @@ func StartService() (err error) {
 		Handler: myRouter,
 		Addr: ":" + system.Runtime.Port,
 	}
-	logrus.Fatal(server.ListenAndServe())
+
+	if system.SupportTLS() {
+		logrus.Fatal(server.ListenAndServeTLS(system.TLS.CertFile, system.TLS.KeyFile))
+	} else {
+		logrus.Fatal(server.ListenAndServe())
+	}
+
 	return
 }

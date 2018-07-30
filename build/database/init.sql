@@ -1,5 +1,5 @@
-CREATE SCHEMA m18awsadmin;
+CREATE SCHEMA fxgosdb;
 
-CREATE USER m18aws IDENTIFIED BY 'm18aws@7jiaj';
+CREATE USER fxgos IDENTIFIED BY 'fxgos@lyismydg';
 
-GRANT ALL PRIVILEGES ON *.* TO 'm18aws'@'%' with grant option;
+GRANT ALL PRIVILEGES ON *.* TO 'fxgos'@'%' with grant option;

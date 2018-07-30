@@ -84,12 +84,6 @@ func (trace *TraceHook) Fire(entry *logrus.Entry) (err error) {
 				if entry.Data["user"] != nil {
 					traceLog.User = entry.Data["user"].(string);
 				}
-				if entry.Data["tenantId"] != nil {
-					traceLog.TenantId = entry.Data["tenantId"].(int64);
-				}
-				if entry.Data["tenant"] != nil {
-					traceLog.Tenant = entry.Data["tenant"].(string);
-				}
 				go logToDatabase(&traceLog)
 			}
 		}
@@ -102,8 +96,6 @@ func logToDatabase(log *TraceLog)  {
 	_, err := DbEngine.Insert(log)
 	if err != nil {
 		logrus.Error(err)
-	} else {
-		logrus.Infof("Log ID = %d is insert", log.Id)
 	}
 }
 

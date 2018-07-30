@@ -63,7 +63,7 @@ func (asc *AuthServerConfig) authValidateMiddleware(next http.Handler) http.Hand
 
 		next.ServeHTTP(w, r)
 
-		if r.URL.Path == "/admin/logout" && tokenInfo != nil {
+		if r.URL.Path == service.GetProtectedPath("logout") && tokenInfo != nil {
 			asc.authServer.Manager.RemoveAccessToken(tokenInfo.GetAccess())
 			asc.authServer.Manager.RemoveRefreshToken(tokenInfo.GetRefresh())
 		}
@@ -139,7 +139,6 @@ func SetupOAuthRouter(router *mux.Router) (err error){
 	if err != nil {
 		return
 	}
-
 
 	router.HandleFunc(system.TokenPath, authServerConfig.handlerTokenRequest)
 	router.Use(authServerConfig.authValidateMiddleware)

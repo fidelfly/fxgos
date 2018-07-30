@@ -1,0 +1,28 @@
+Version = "0.1.0"
+
+[Runtime]
+LogLevel = "info" #warning
+LogPath = "./output/logs"
+LogFile = "fxgos.log"
+MaxSize = 1
+Stdout = true
+WebPath = ""
+Debug = true
+Port = "8080"
+
+[Database]
+Host = "127.0.0.1"
+Port = "3306"
+Schema = "fxgosdb"
+User = "fxgos"
+Password = "fxgos@lyismydg"
+
+[Oauth2]
+    [[Oauth2.Client]]
+    ID = "fxras"
+    Secret = "fxras123456"
+    Domain = "https://127.0.0.1:3000"
+
+[TLS]
+CertFile = "../tls/server/server.crt"
+KeyFile = "../tls/server/server.key"

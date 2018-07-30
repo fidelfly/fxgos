@@ -16,14 +16,14 @@
 [[projects]]
   name = "github.com/go-sql-driver/mysql"
   packages = ["."]
-  revision = "d523deb1b23d913de5bdada721a6071e71283618"
-  version = "v1.4.0"
+  revision = "a0583e0143b1624142adab07e0e97fe106d99561"
+  version = "v1.3.0"
 
 [[projects]]
   name = "github.com/go-xorm/builder"
   packages = ["."]
-  revision = "bad0a612f0d6277b953910822ab5dfb30dd18237"
-  version = "v0.2.0"
+  revision = "dc8bf48f58fab2b4da338ffd25191905fd741b8f"
+  version = "v0.3.0"
 
 [[projects]]
   name = "github.com/go-xorm/core"
@@ -70,8 +70,8 @@
 [[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
-  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
-  version = "v1.0.5"
+  revision = "418b41d23a1bf978c06faea5313ba194650ac088"
+  version = "v0.8.7"
 
 [[projects]]
   branch = "master"
@@ -119,27 +119,6 @@
   revision = "1e39f55115634cad2c504631c8bfcc292f2c9c55"
 
 [[projects]]
-  branch = "master"
-  name = "golang.org/x/crypto"
-  packages = ["ssh/terminal"]
-  revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
-
-[[projects]]
-  branch = "master"
-  name = "golang.org/x/sys"
-  packages = [
-    "unix",
-    "windows"
-  ]
-  revision = "7138fd3d9dc8335c567ca206f4333fb75eb05d56"
-
-[[projects]]
-  name = "google.golang.org/appengine"
-  packages = ["cloudsql"]
-  revision = "b1f26356af11148e710935ed1ac8a7f5702c7612"
-  version = "v1.1.0"
-
-[[projects]]
   name = "gopkg.in/oauth2.v3"
   packages = [
     ".",
@@ -150,12 +129,12 @@
     "server",
     "store"
   ]
-  revision = "6f608a6e0307a97455db74fa5297fd38cb249aa7"
-  version = "v3.8.4"
+  revision = "196a0236d070cac5c2db1fd5cef194ffcf81f676"
+  version = "v3.8.5"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bb055d9c53c384b9eff43b4f4bb053d38b3cac14f49e9f938c25dcd5c7097463"
+  inputs-digest = "f43bfc9d1d4181cdf705f052fa4d975476d155bbe7f96f214fd53fbb1ff813e0"
   solver-name = "gps-cdcl"
   solver-version = 1

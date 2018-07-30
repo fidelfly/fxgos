@@ -99,6 +99,16 @@ func IsProtected(r *http.Request) bool {
 	return strings.HasPrefix(r.URL.Path, system.ProtectedPrefix)
 }
 
+func GetProtectedPath(path string) string {
+	if len(path) > 0 {
+		if strings.HasPrefix(path,"/") {
+			return system.ProtectedPrefix + path
+		}
+		return system.ProtectedPrefix + "/" + path
+	}
+	return path
+}
+
 func TraceLoger(code string, r *http.Request, data ...map[string]interface{}) *logrus.Entry{
 	traceFields := logrus.Fields{
 		"trace" : true,
@@ -108,8 +118,6 @@ func TraceLoger(code string, r *http.Request, data ...map[string]interface{}) *l
 	if userInfo != nil {
 		traceFields["userId"] = userInfo.Id
 		traceFields["user"] = userInfo.Code
-		traceFields["tenantId"] = userInfo.TenantId
-		traceFields["tenant"] = userInfo.TenantCode
 	}
 	traceFields["requestUrl"] = r.RequestURI
 

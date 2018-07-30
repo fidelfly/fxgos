@@ -1,11 +1,11 @@
 version: "3.1"
 services:
-  admindb:
+  fxgosdb:
     image: mysql:latest
-    container_name: admindb
+    container_name: fxgosdb
     ports:
       - "3306:3306"
     volumes:
       - ./mysql/data:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: adb123saas
+      MYSQL_ROOT_PASSWORD: fx123gos
