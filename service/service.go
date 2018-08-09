@@ -109,6 +109,16 @@ func GetProtectedPath(path string) string {
 	return path
 }
 
+func GetPublicPath(path string) string {
+	if len(path) > 0 {
+		if strings.HasPrefix(path,"/") {
+			return system.PublicPrefix + path
+		}
+		return system.PublicPrefix + "/" + path
+	}
+	return path
+}
+
 func TraceLoger(code string, r *http.Request, data ...map[string]interface{}) *logrus.Entry{
 	traceFields := logrus.Fields{
 		"trace" : true,
