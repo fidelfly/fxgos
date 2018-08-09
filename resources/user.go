@@ -138,7 +138,7 @@ func (us *UserService) Register(w http.ResponseWriter, r *http.Request) {
 
 func init() {
 	user := new(UserService)
-	defineResourceHandlerFunction("get", "/admin/user", user.Get)
-	defineResourceHandlerFunction("post", "/admin/user", user.Post)
+	defineResourceHandlerFunction("get", "/fxgos/user", user.Get)
+	defineResourceHandlerFunction("post", "/fxgos/user", user.Post)
 	defineResourceHandlerFunction("post", "/public/user", user.Register)
 }

@@ -28,10 +28,10 @@ func SetupRouter() (router *mux.Router, err error) {
 
 
 func setupServiceRouter(router *mux.Router) (err error) {
-	router.HandleFunc("/admin/logout", logout)
-	router.HandleFunc("/admin/password", updatePassword).Methods("post")
+	router.HandleFunc("/fxgos/logout", logout)
+	router.HandleFunc("/fxgos/password", updatePassword).Methods("post")
 	router.HandleFunc("/test/{key}", Test)
-	router.HandleFunc("/admin/test/{key}", Test)
+	router.HandleFunc("/fxgos/test/{key}", Test)
 	return
 }
 
@@ -53,13 +53,7 @@ func logMiddleware(next http.Handler) http.Handler {
 				break
 			}
 		}
-		userInfo := service.GetUserInfo(r)
-		if userInfo != nil {
-			service.TraceLoger(traceCode, r, logData).Infof("%s %s (%s, %s[%v])", r.Method, r.RequestURI, r.RemoteAddr, userInfo.Code, userInfo.Id)
-		} else {
-			service.TraceLoger(traceCode, r, logData).Infof("%s %s ( %s )", r.Method, r.RequestURI, r.RemoteAddr)
-		}
-
+		service.TraceLoger(traceCode, r, logData).Infof("%s %s", r.Method, r.RequestURI)
 	})
 }
 

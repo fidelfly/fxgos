@@ -104,6 +104,6 @@ func (as *AssetService) Get(w http.ResponseWriter, r * http.Request) {
 
 func init()  {
 	asset := new(AssetService)
-	defineResourceHandlerFunction("post", "/admin/asset", asset.Post)
+	defineResourceHandlerFunction("post", "/fxgos/asset", asset.Post)
 	defineResourceHandlerFunction("get", "/public/asset/{id}", asset.Get)
 }
