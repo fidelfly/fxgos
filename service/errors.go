@@ -16,5 +16,12 @@ func ExceptionError(err error) ResponseError {
 	}
 }
 
+func NewResponseError(code string, message string) ResponseError {
+	return ResponseError{
+		code,
+		message,
+	}
+}
+
 var UnauthorizedError = ResponseError{"UNAUTHORIZED", "Unauthorized Action!"}
 var TokenExpired = ResponseError{"TOKENEXPIRED", "Token is expired!"}
