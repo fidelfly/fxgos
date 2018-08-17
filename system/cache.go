@@ -12,6 +12,14 @@ type MemCache struct {
 	resolver CacheResolver
 }
 
+func (mc *MemCache) GetStore() (*cache.Cache) {
+	return mc.cacheInstance
+}
+
+func (mc *MemCache) Remove(key string) {
+	mc.cacheInstance.Delete(key)
+}
+
 func (mc *MemCache) SetResolver(resovler CacheResolver) {
 	mc.resolver = resovler
 }

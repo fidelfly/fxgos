@@ -1,15 +1,16 @@
 package service
 
 import (
-"encoding/json"
-"net/http"
+	"encoding/json"
+	"net/http"
 
-"github.com/gorilla/mux"
-"context"
-"github.com/sirupsen/logrus"
+	"github.com/gorilla/mux"
+	"context"
+	"github.com/sirupsen/logrus"
 	"github.com/lyismydg/fxgos/system"
 	"gopkg.in/oauth2.v3"
 	"strings"
+	"io/ioutil"
 )
 
 type ResponseData map[string]interface{}
@@ -23,6 +24,7 @@ type RespSetting struct {
 type ResponseError struct {
 	Code string `json:"errorCode"`
 	Message string `json:"errorMessage"`
+	Data map[string]interface{} `json:"data"`
 }
 
 var DefaultResponse = &RespSetting{
@@ -73,6 +75,27 @@ func GetRequestVars(r *http.Request, keys ...string) map[string]string {
 		vars[key] = value
 	}
 	return vars
+}
+
+
+func GetJSONRequestData(r *http.Request, keys ...string) map[string]interface{} {
+	data := make(map[string]interface{})
+	if isJSONRequest(r) {
+		bodyData, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			return data
+		}
+		json.Unmarshal(bodyData, &data)
+	}
+	return data
+}
+
+func isJSONRequest(r *http.Request) bool {
+	contentType := r.Header.Get("Content-Type")
+	if len(contentType) > 0 {
+		return  strings.Index(strings.ToLower(contentType), "application/json") >= 0
+	}
+	return false
 }
 
 func ContextGet(r *http.Request, key interface{}) interface{} {
@@ -149,4 +172,35 @@ func TraceLoger(code string, r *http.Request, data ...map[string]interface{}) *l
 
 	return logrus.WithFields(traceFields)
 }
+
+
+/*
+func GrantSharedLock(r *http.Request, lockCode string, grantCode string, message string) (granted bool, lockAction *system.LockAction, resLock *system.ResourceLock) {
+	userinfo := GetUserInfo(r)
+	locker := system.LockManager.GetSystemLock(userinfo.Code)
+	resLock = locker.GetResourceLock(lockCode)
+	action := &system.LockAction{UserId: userinfo.Id, Code: grantCode, Message: message}
+	if resLock == nil {
+		return true, action, nil
+	}
+	granted, lockAction = resLock.TryLock(action)
+	return
+}
+
+func GrantResourceLock(r *http.Request, resourceCode string, grantCode string, message string, resourceKeys... string) (granted bool, lockAction *system.LockAction, resLock *system.ResourceLock) {
+	userinfo := GetUserInfo(r)
+	resLock = system.LockManager.GetResourdeLock(resourceCode, resourceKeys...)
+	action := &system.LockAction{UserId: userinfo.Id, Code: grantCode, Message: message}
+	if resLock == nil {
+		return true, action, nil
+	}
+	granted, lockAction = resLock.TryLock(action)
+	return
+}
+
+func ResponseLockStatus(w http.ResponseWriter, r *http.Request, lockAction *system.LockAction) {
+	ResponseJSON(w, nil, ResourceLockedError(lockAction), http.StatusConflict)
+}
+*/
+
 
