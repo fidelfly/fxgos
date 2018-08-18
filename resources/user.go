@@ -19,6 +19,7 @@ type UserService struct {
 
 }
 
+const duplicateUserCode  = "duplicate_user_code"
 func (us *UserService) Get(w http.ResponseWriter, r *http.Request) {
 	params := service.GetRequestVars(r, "userId")
 	userId, _ := strconv.ParseInt(params["userId"],10, 64)
@@ -115,9 +116,17 @@ func (us *UserService) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user := system.User{Code:code}
+	if exist, _ := session.Get(&user); exist {
+		service.ResponseJSON(w, nil, service.NewResponseError(duplicateUserCode, "Duplicate code is found!"), http.StatusBadRequest)
+		return
+	}
+
+	user.Name = name
+
 	password = auth.EncodePassword(code, password)
 	//fmt.Println("Password : " + password)
-	user := system.User{Code:code, Name:name, Password: password}
+	user.Password = password
 	_, err = session.Insert(&user)
 	if err != nil {
 		session.Rollback()
