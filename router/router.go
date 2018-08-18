@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"github.com/lyismydg/fxgos/service"
 	"gopkg.in/oauth2.v3"
+	"net"
+	"bufio"
+	"errors"
 )
 
 func SetupRouter() (router *mux.Router, err error) {
@@ -69,4 +72,11 @@ func newLoggingResponseWriter(w http.ResponseWriter) *loggingResponseWriter {
 func (lrw *loggingResponseWriter) WriteHeader(code int) {
 	lrw.statusCode = code
 	lrw.ResponseWriter.WriteHeader(code)
+}
+
+func (lrw *loggingResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if hj, ok := lrw.ResponseWriter.(http.Hijacker); ok {
+		return hj.Hijack()
+	}
+	return nil, nil, errors.New("Not hkjact responseWriter")
 }
