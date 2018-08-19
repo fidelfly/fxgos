@@ -3,13 +3,14 @@ package router
 import (
 	"github.com/gorilla/mux"
 	"github.com/lyismydg/fxgos/auth"
-	"github.com/lyismydg/fxgos/resources"
 	"net/http"
+	_ "github.com/lyismydg/fxgos/resources"
 	"github.com/lyismydg/fxgos/service"
 	"gopkg.in/oauth2.v3"
 	"net"
 	"bufio"
 	"errors"
+	"github.com/lyismydg/fxgos/system"
 )
 
 func SetupRouter() (router *mux.Router, err error) {
@@ -23,7 +24,9 @@ func SetupRouter() (router *mux.Router, err error) {
 		return
 	}
 
-	resources.SetupRouter(router)
+	//resources.SetupRouter(router)
+
+	system.AttachRouterManager(router)
 
 	router.Use(logMiddleware)
 	return

@@ -148,7 +148,7 @@ func (us *UserService) Register(w http.ResponseWriter, r *http.Request) {
 func init() {
 	user := new(UserService)
 	path := service.GetProtectedPath("user")
-	defineResourceHandlerFunction("get", path, user.Get)
-	defineResourceHandlerFunction("post", path, user.Post)
-	defineResourceHandlerFunction("post", service.GetPublicPath("user"), user.Register)
+	myRouter.Root().Path(path).Methods("get").HandlerFunc(user.Get)
+	myRouter.Root().Path(path).Methods("post").HandlerFunc(user.Post)
+	myRouter.Root().Path(service.GetPublicPath("user")).Methods("post").HandlerFunc(user.Register)
 }

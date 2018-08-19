@@ -1,12 +1,10 @@
 package resources
 
 import (
-	"net/http"
-	"github.com/gorilla/mux"
-	"strings"
+	"github.com/lyismydg/fxgos/system"
 )
 
-var handlers  = make(map[string]http.Handler, 0)
+/*var handlers  = make(map[string]http.Handler, 0)
 var handlerFunctions = make(map[string]http.HandlerFunc, 0)
 
 func defineResourceHandler(method string, path string, handler http.Handler)  {
@@ -54,6 +52,8 @@ func SetupRouter(router *mux.Router) {
 			router.HandleFunc(path, handlerFunction)
 		}
 	}
-}
+}*/
+
+var myRouter = system.NewRouteManager("/resource")
 
 

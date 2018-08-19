@@ -40,8 +40,8 @@ func (ws *ProgressService) Setup(w http.ResponseWriter, r *http.Request) {
 
 func init() {
 	ws := &ProgressService{}
-	defineResourceHandlerFunction("", "/fxgos/progress", ws.Setup)
-	defineResourceHandlerFunction("", "/fxgos/progress/{code}", ws.Setup)
+	myRouter.Root().Path(service.GetProtectedPath("progress")).HandlerFunc(ws.Setup)
+	myRouter.Root().Path(service.GetProtectedPath("progress/{code}")).HandlerFunc(ws.Setup)
 }
 
 func generateSocketKey(code string, r *http.Request) string {

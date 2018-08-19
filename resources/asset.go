@@ -104,6 +104,6 @@ func (as *AssetService) Get(w http.ResponseWriter, r * http.Request) {
 
 func init()  {
 	asset := new(AssetService)
-	defineResourceHandlerFunction("post", "/fxgos/asset", asset.Post)
-	defineResourceHandlerFunction("get", "/public/asset/{id}", asset.Get)
+	myRouter.Root().Path(service.GetProtectedPath("asset")).Methods("post").HandlerFunc(asset.Post)
+	myRouter.Root().Path(service.GetPublicPath("asset/{id}")).Methods("get").HandlerFunc(asset.Get)
 }
