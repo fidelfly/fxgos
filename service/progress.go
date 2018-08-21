@@ -19,6 +19,13 @@ const (
 	PROGRESS_SUCCESS   = "success"
 )
 
+type ProgressSetter interface {
+	GetPercent() int
+	GetStatus() string
+	GetMessage() interface{}
+	Set(percent int, status string, message ...interface{})
+}
+
 type ProgressSubscriber interface {
 	ProgressSet(percent int, status string, messages ...interface{})
 }
@@ -57,9 +64,19 @@ type ProgressDispatcher struct {
 	message     interface{}
 	percent     int
 	status      string
-	auto        bool
+	auto        *AutoProgress
 	sub         []*SubProgress
 	mux         sync.Mutex
+}
+
+func (pd *ProgressDispatcher) GetPercent() int {
+	return pd.percent
+}
+func (pd *ProgressDispatcher) GetStatus() string {
+	return pd.status
+}
+func (pd *ProgressDispatcher) GetMessage() interface{} {
+	return pd.message
 }
 
 func (pd *ProgressDispatcher) SetStatus(status string, message ...interface{}) {
@@ -110,8 +127,9 @@ func (pd *ProgressDispatcher) notify(percent int, status string, message interfa
 }
 
 func (pd *ProgressDispatcher) Set(percent int, status string, message ...interface{}) {
-	if pd.auto {
-		pd.auto = false
+	if pd.auto != nil {
+		pd.auto.Stop()
+		pd.auto = nil
 	}
 	pd.percent = percent
 	pd.status = status
@@ -126,22 +144,13 @@ func (pd *ProgressDispatcher) AutoProgress(stepValue int, duration time.Duration
 		pd.message = message[0]
 		pd.notifySubscriber()
 	}
-	ticker := time.NewTicker(duration)
-	pd.auto = true
-	go func() {
-		for _ = range ticker.C {
-			if pd.percent+stepValue > maxValue {
-				pd.percent = maxValue
-			} else {
-				pd.percent += stepValue
-			}
-			pd.notifySubscriber()
-			if !pd.auto || pd.percent >= maxValue {
-				pd.auto = false
-				break
-			}
-		}
-	}()
+
+	if pd.auto != nil {
+		pd.auto.Stop()
+		pd.auto = nil
+	}
+	pd.auto = newAutoProgress(pd, stepValue, duration, maxValue)
+	pd.auto.Start()
 }
 
 func (pd *ProgressDispatcher) Step(stepValue int, message ...interface{}) {
@@ -197,6 +206,39 @@ func (pd *ProgressDispatcher) ProgressChanged(status string, message ...interfac
 	pd.notify(percent, status, msg)
 }
 
+//Struct AutoProgress
+type AutoProgress struct {
+	progress  ProgressSetter
+	stepValue int
+	maxValue  int
+	duration  time.Duration
+	ticker    *time.Ticker
+}
+
+func (ap *AutoProgress) Start() {
+	ap.ticker = time.NewTicker(ap.duration)
+	go func() {
+		for _ = range ap.ticker.C {
+			percent := ap.progress.GetPercent() + ap.stepValue
+			if percent > ap.maxValue {
+				percent = ap.maxValue
+			}
+			ap.progress.Set(percent, ap.progress.GetStatus(), ap.progress.GetMessage())
+			if percent >= ap.maxValue {
+				break
+			}
+		}
+	}()
+}
+
+func (ap *AutoProgress) Stop() {
+	ap.ticker.Stop()
+}
+
+func newAutoProgress(progress ProgressSetter, stepValue int, duration time.Duration, maxValue int) *AutoProgress {
+	return &AutoProgress{progress: progress, stepValue: stepValue, duration: duration, maxValue: maxValue}
+}
+
 //Core Struct : WsProgress
 type WsProgress struct {
 	ws      *websocket.WsConnect `json:"_"`
@@ -204,7 +246,7 @@ type WsProgress struct {
 	Message interface{}          `json:"message"`
 	Percent int                  `json:"percent"`
 	Status  string               `json:"status"`
-	auto    bool                 `json:"_"`
+	auto    *AutoProgress
 	sub     []*SubProgress
 	mux     sync.Mutex
 }
@@ -214,6 +256,17 @@ func GetProgress(key string, code string) *WsProgress {
 		return &WsProgress{ws: conn.(*websocket.WsConnect), Code: code}
 	}
 	return &WsProgress{Code: code}
+}
+
+func (wsp *WsProgress) GetPercent() int {
+	return wsp.Percent
+}
+
+func (wsp *WsProgress) GetStatus() string {
+	return wsp.Status
+}
+func (wsp *WsProgress) GetMessage() interface{} {
+	return wsp.Message
 }
 
 func (wsp *WsProgress) SetStatus(status string, message ...interface{}) {
@@ -233,8 +286,9 @@ func (wsp *WsProgress) Done(message ...interface{}) {
 }
 
 func (wsp *WsProgress) Set(percent int, status string, message ...interface{}) {
-	if wsp.auto {
-		wsp.auto = false
+	if wsp.auto != nil {
+		wsp.auto.Stop()
+		wsp.auto = nil
 	}
 	wsp.Percent = percent
 	wsp.Status = status
@@ -291,22 +345,14 @@ func (wsp *WsProgress) AutoProgress(stepValue int, duration time.Duration, maxVa
 		wsp.Message = message[0]
 		wsp.SendMsg()
 	}
-	ticker := time.NewTicker(duration)
-	wsp.auto = true
-	go func() {
-		for _ = range ticker.C {
-			if wsp.Percent+stepValue > maxValue {
-				wsp.Percent = maxValue
-			} else {
-				wsp.Percent += stepValue
-			}
-			wsp.SendMsg()
-			if !wsp.auto || wsp.Percent >= maxValue {
-				wsp.auto = false
-				break
-			}
-		}
-	}()
+
+	if wsp.auto != nil {
+		wsp.auto.Stop()
+		wsp.auto = nil
+	}
+
+	wsp.auto = newAutoProgress(wsp, stepValue, duration, maxValue)
+	wsp.auto.Start()
 }
 
 func (wsp *WsProgress) Step(stepValue int, message ...interface{}) {
