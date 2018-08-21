@@ -122,7 +122,7 @@ func (pd *ProgressDispatcher) notify(percent int, status string, message interfa
 				}
 			}
 		}
-		logrus.Infof("Progress(%s) : percent = %d%, status = %s, message = %s", pd.Code, percent, status, msg)
+		logrus.Infof("Progress(%s) : percent = %d%%, status = %s, message = %s", pd.Code, percent, status, msg)
 	}
 }
 
@@ -318,7 +318,7 @@ func (wsp *WsProgress) Send(percent int, status string, message interface{}) {
 				}
 			}
 		}
-		logrus.Infof("Progress(%s) : percent = %d%, status = %s, message = %s", wsp.Code, percent, status, msg)
+		logrus.Infof("Progress(%s) : percent = %d%%, status = %s, message = %s", wsp.Code, percent, status, msg)
 	}
 }
 
@@ -336,7 +336,7 @@ func (wsp *WsProgress) SendMsg() {
 				}
 			}
 		}
-		logrus.Infof("Progress(%s) : percent = %d%, status = %s, message = %s", wsp.Code, wsp.Percent, wsp.Status, msg)
+		logrus.Infof("Progress(%s) : percent = %d%%, status = %s, message = %s", wsp.Code, wsp.Percent, wsp.Status, msg)
 	}
 }
 
