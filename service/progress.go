@@ -371,6 +371,7 @@ func (wsp *WsProgress) updateData(percent int, status string, message interface{
 func (wsp *WsProgress) delaySend(timer *time.Timer) {
 	wsp.delayed = true
 	go func() {
+		defer timer.Stop()
 		for {
 			select {
 			case <-timer.C:
@@ -378,8 +379,9 @@ func (wsp *WsProgress) delaySend(timer *time.Timer) {
 				if wsp.delayMessage {
 					if wsp.ws != nil && wsp.ws.IsOpen() {
 						wsp.ws.SendMessage(wsp.data)
-						timer = time.NewTimer(100 * time.Millisecond)
+						timer.Reset(100 * time.Millisecond)
 						wsp.delayMessage = false
+						wsp.senderLock.Unlock()
 					} else {
 						wsp.delayed = false
 						wsp.delayMessage = false
@@ -392,7 +394,6 @@ func (wsp *WsProgress) delaySend(timer *time.Timer) {
 					wsp.senderLock.Unlock()
 					return
 				}
-				wsp.senderLock.Unlock()
 			default:
 			}
 		}
