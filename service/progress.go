@@ -69,6 +69,7 @@ type ProgressDispatcher struct {
 	sub         []*SubProgress
 	mux         sync.Mutex
 	data        map[string]interface{}
+	notifyLock  sync.Mutex
 }
 
 func (pd *ProgressDispatcher) GetPercent() int {
@@ -122,6 +123,8 @@ func (pd *ProgressDispatcher) updateData(percent int, status string, message int
 	return dataChange
 }
 func (pd *ProgressDispatcher) notify(percent int, status string, message interface{}) {
+	pd.notifyLock.Lock()
+	defer pd.notifyLock.Unlock()
 	if percent < 0 {
 		percent = pd.percent
 	}
