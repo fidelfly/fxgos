@@ -33,7 +33,6 @@ type ProgressSetter interface {
 
 type ProgressSubscriber interface {
 	ProgressSet(percent int, status string, messages ...interface{})
-	Done()
 }
 
 type ProgressSuperior interface {
@@ -59,10 +58,8 @@ func (sp *SubProgress) ProgressSet(percent int, status string, message ...interf
 	}
 
 	sp.superior.ProgressChanged(sp)
-}
 
-func (sp *SubProgress) Done() {
-	sp.done = true
+	sp.done = percent >= 100
 }
 
 func (sp *SubProgress) IsDone() bool {
