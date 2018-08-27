@@ -99,13 +99,22 @@ func (pd *ProgressDispatcher) Active(percent int, message ...interface{}) {
 	pd.Set(percent, PROGRESS_ACTIVE, message...)
 }
 
-func (pd *ProgressDispatcher) Done(message ...interface{}) {
+func (pd *ProgressDispatcher) Success(message ...interface{}) {
 	if len(message) == 0 {
 		pd.Set(100, PROGRESS_SUCCESS, "")
 	} else {
 		pd.Set(100, PROGRESS_SUCCESS, message...)
 	}
 }
+
+func (pd *ProgressDispatcher) Done(status string, message ...interface{}) {
+	if len(message) == 0 {
+		pd.Set(100, status, "")
+	} else {
+		pd.Set(100, status, message...)
+	}
+}
+
 func (pd *ProgressDispatcher) notifySubscriber() {
 	pd.notify(pd.percent, pd.status, pd.message)
 }
@@ -338,8 +347,12 @@ func (wsp *WsProgress) Active(percent int, message ...interface{}) {
 	wsp.Set(percent, PROGRESS_ACTIVE, message...)
 }
 
-func (wsp *WsProgress) Done(message ...interface{}) {
+func (wsp *WsProgress) Success(message ...interface{}) {
 	wsp.Set(100, PROGRESS_SUCCESS, message...)
+}
+
+func (wsp *WsProgress) Done(status string, message ...interface{}) {
+	wsp.Set(100, status, message...)
 }
 
 func (wsp *WsProgress) update(percent int, status string, message ...interface{}) {

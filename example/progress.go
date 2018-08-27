@@ -47,7 +47,7 @@ func (pe *ProgressExample) ServiceProgress(w http.ResponseWriter, r *http.Reques
 
 func goProgress(code string, step int, duration time.Duration, progressSubscribers ...service.ProgressSubscriber) {
 	pd := service.NewProgressDispatcher(code, progressSubscribers...)
-	defer pd.Done()
+	defer pd.Success()
 	ticker := time.NewTicker(duration)
 	defer ticker.Stop()
 	for {
