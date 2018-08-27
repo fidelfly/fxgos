@@ -42,6 +42,7 @@ type SubProgress struct {
 	Message     interface{}
 	Percent     int
 	Status      string
+	Propagation bool
 }
 
 func (sp *SubProgress) ProgressSet(percent int, status string, message ...interface{}) {
@@ -50,8 +51,12 @@ func (sp *SubProgress) ProgressSet(percent int, status string, message ...interf
 	if len(message) > 0 {
 		sp.Message = message[0]
 	}
+	if sp.Propagation && sp.Status == PROGRESS_EXCEPTION {
+		sp.Superior.ProgressChanged(sp.Status, message...)
+	} else {
+		sp.Superior.ProgressChanged("", message...)
+	}
 
-	sp.Superior.ProgressChanged(sp.Status, message...)
 }
 
 func NewProgressDispatcher(code string, subscriber ...ProgressSubscriber) *ProgressDispatcher {
@@ -207,6 +212,10 @@ func (pd *ProgressDispatcher) ProgressChanged(status string, message ...interfac
 	}
 	percent := pd.percent
 
+	if len(status) > 0 {
+		pd.status = status
+	}
+
 	if pd.sub != nil && len(pd.sub) > 0 {
 		subok := int(0)
 		okindex := make([]int, len(pd.sub))
@@ -237,7 +246,7 @@ func (pd *ProgressDispatcher) ProgressChanged(status string, message ...interfac
 		}
 	}
 
-	pd.notify(percent, status, msg)
+	pd.notify(percent, pd.status, msg)
 }
 
 //Struct AutoProgress
@@ -490,6 +499,10 @@ func (wsp *WsProgress) ProgressChanged(status string, message ...interface{}) {
 	}
 	percent := wsp.Percent
 
+	if len(status) > 0 {
+		wsp.Status = status
+	}
+
 	if wsp.sub != nil && len(wsp.sub) > 0 {
 		subok := int(0)
 		okindex := make([]int, len(wsp.sub))
@@ -521,5 +534,5 @@ func (wsp *WsProgress) ProgressChanged(status string, message ...interface{}) {
 		}
 	}
 
-	wsp.Send(percent, status, msg)
+	wsp.Send(percent, wsp.Status, msg)
 }
