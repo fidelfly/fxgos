@@ -100,7 +100,11 @@ func (pd *ProgressDispatcher) Active(percent int, message ...interface{}) {
 }
 
 func (pd *ProgressDispatcher) Done(message ...interface{}) {
-	pd.Set(100, PROGRESS_SUCCESS, message...)
+	if len(message) == 0 {
+		pd.Set(100, PROGRESS_SUCCESS, "")
+	} else {
+		pd.Set(100, PROGRESS_SUCCESS, message...)
+	}
 }
 func (pd *ProgressDispatcher) notifySubscriber() {
 	pd.notify(pd.percent, pd.status, pd.message)
