@@ -7,6 +7,8 @@ import (
 
 	"net/http"
 
+	"time"
+
 	gws "github.com/gorilla/websocket"
 )
 
@@ -27,6 +29,7 @@ type WsConnect struct {
 	Encoder          WsEncoder
 	Status           uint
 	Conn             *gws.Conn
+	Duration         time.Duration
 	receivers        []WsReceiver
 	closeHandlers    []WsCloseHandler
 	receiveLock      *sync.Mutex
@@ -149,38 +152,71 @@ func (wsc *WsConnect) startReader() {
 	}
 }
 
-func (wsc *WsConnect) startWriter() {
-	for {
-		select {
-		case message := <-wsc.writerChan:
-			if wsc.Encoder != nil {
-				messageType, data, err := wsc.Encoder(message)
-				if err != nil {
-					wsc.Conn.WriteMessage(messageType, data)
-				}
-			} else {
-				if encoder, ok := message.(WsWriter); ok {
-					messageType, data, err := encoder.EncodeWsMessage()
-					if err == nil {
-						wsc.Conn.WriteMessage(messageType, data)
-						break
-					}
-				}
-				if text, ok := message.(string); ok {
-					wsc.Conn.WriteMessage(TextMessage, []byte(text))
-					break
-				} else {
-					wsc.Conn.WriteJSON(message)
-				}
-			}
-
-			break
-		default:
-			if wsc.Status != OPENED {
+func (wsc *WsConnect) sendToReceiver(message interface{}) {
+	if wsc.Encoder != nil {
+		messageType, data, err := wsc.Encoder(message)
+		if err != nil {
+			wsc.Conn.WriteMessage(messageType, data)
+			return
+		}
+	} else {
+		if encoder, ok := message.(WsWriter); ok {
+			messageType, data, err := encoder.EncodeWsMessage()
+			if err == nil {
+				wsc.Conn.WriteMessage(messageType, data)
 				return
 			}
 		}
+		if text, ok := message.(string); ok {
+			wsc.Conn.WriteMessage(TextMessage, []byte(text))
+			return
+		} else {
+			wsc.Conn.WriteJSON(message)
+		}
 	}
+}
+
+func (wsc *WsConnect) startWriter() {
+	var message interface{}
+	if wsc.Duration <= 0 {
+		for {
+			select {
+			case message = <-wsc.writerChan:
+				wsc.sendToReceiver(message)
+				break
+			default:
+				if wsc.Status != OPENED {
+					return
+				}
+			}
+		}
+	} else {
+		ticker := time.NewTicker(wsc.Duration)
+		defer ticker.Stop()
+		for {
+			select {
+			case message = <-wsc.writerChan:
+				break
+			default:
+				if wsc.Status != OPENED {
+					return
+				}
+			}
+
+			select {
+			case <-ticker.C:
+				if message != nil {
+					wsc.sendToReceiver(message)
+					message = nil
+				}
+			default:
+				if wsc.Status != OPENED {
+					return
+				}
+			}
+		}
+	}
+
 }
 
 func SetupWebsocket(wsc *WsConnect, w http.ResponseWriter, r *http.Request, headers ...map[string]string) (err error) {

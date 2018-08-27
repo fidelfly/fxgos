@@ -1,16 +1,18 @@
 package router
 
 import (
-	"github.com/gorilla/mux"
-	"github.com/lyismydg/fxgos/auth"
-	"net/http"
-	_ "github.com/lyismydg/fxgos/resources"
-	"github.com/lyismydg/fxgos/service"
-	"gopkg.in/oauth2.v3"
-	"net"
 	"bufio"
 	"errors"
+	"net"
+	"net/http"
+
+	"github.com/gorilla/mux"
+	"github.com/lyismydg/fxgos/auth"
+	_ "github.com/lyismydg/fxgos/example"
+	_ "github.com/lyismydg/fxgos/resources"
+	"github.com/lyismydg/fxgos/service"
 	"github.com/lyismydg/fxgos/system"
+	"gopkg.in/oauth2.v3"
 )
 
 func SetupRouter() (router *mux.Router, err error) {
@@ -32,7 +34,6 @@ func SetupRouter() (router *mux.Router, err error) {
 	return
 }
 
-
 func setupServiceRouter(router *mux.Router) (err error) {
 	router.HandleFunc("/fxgos/logout", logout)
 	router.HandleFunc("/fxgos/password", updatePassword).Methods("post")
@@ -47,7 +48,7 @@ func logMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(logWriter, r)
 
 		logData := make(map[string]interface{})
-		logData["status"] = http.StatusText(logWriter.statusCode);
+		logData["status"] = http.StatusText(logWriter.statusCode)
 		traceCode := "API_LOG"
 		if ok, grantType := service.IsTokenRequest(r); ok {
 			switch oauth2.GrantType(grantType) {

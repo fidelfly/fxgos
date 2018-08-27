@@ -24,6 +24,7 @@ type ProgressSetter interface {
 	GetStatus() string
 	GetMessage() interface{}
 	Set(percent int, status string, message ...interface{})
+	update(percent int, status string, message ...interface{})
 }
 
 type ProgressSubscriber interface {
@@ -67,6 +68,7 @@ type ProgressDispatcher struct {
 	auto        *AutoProgress
 	sub         []*SubProgress
 	mux         sync.Mutex
+	data        map[string]interface{}
 }
 
 func (pd *ProgressDispatcher) GetPercent() int {
@@ -97,6 +99,28 @@ func (pd *ProgressDispatcher) Done(message ...interface{}) {
 func (pd *ProgressDispatcher) notifySubscriber() {
 	pd.notify(pd.percent, pd.status, pd.message)
 }
+
+func (pd *ProgressDispatcher) updateData(percent int, status string, message interface{}) bool {
+	dataChange := false
+	if pd.data == nil {
+		pd.data = make(map[string]interface{})
+	}
+
+	if pd.data["percent"] != percent {
+		dataChange = true
+		pd.data["percent"] = percent
+	}
+
+	if pd.data["status"] != status {
+		pd.data["status"] = status
+	}
+
+	if pd.data["message"] != message {
+		pd.data["message"] = message
+	}
+
+	return dataChange
+}
 func (pd *ProgressDispatcher) notify(percent int, status string, message interface{}) {
 	if percent < 0 {
 		percent = pd.percent
@@ -106,6 +130,10 @@ func (pd *ProgressDispatcher) notify(percent int, status string, message interfa
 	}
 	if message == nil {
 		message = pd.message
+	}
+
+	if !pd.updateData(percent, status, message) {
+		return
 	}
 	if len(pd.Subscribers) > 0 {
 		for _, subscriber := range pd.Subscribers {
@@ -125,18 +153,20 @@ func (pd *ProgressDispatcher) notify(percent int, status string, message interfa
 		logrus.Infof("Progress(%s) : percent = %d%%, status = %s, message = %s", pd.Code, percent, status, msg)
 	}
 }
-
-func (pd *ProgressDispatcher) Set(percent int, status string, message ...interface{}) {
-	if pd.auto != nil {
-		pd.auto.Stop()
-		pd.auto = nil
-	}
+func (pd *ProgressDispatcher) update(percent int, status string, message ...interface{}) {
 	pd.percent = percent
 	pd.status = status
 	if len(message) > 0 {
 		pd.message = message[0]
 	}
 	pd.notifySubscriber()
+}
+func (pd *ProgressDispatcher) Set(percent int, status string, message ...interface{}) {
+	if pd.auto != nil {
+		pd.auto.Stop()
+		pd.auto = nil
+	}
+	pd.update(percent, status, message...)
 }
 
 func (pd *ProgressDispatcher) AutoProgress(stepValue int, duration time.Duration, maxValue int, message ...interface{}) {
@@ -200,6 +230,7 @@ func (pd *ProgressDispatcher) ProgressChanged(status string, message ...interfac
 			if index < len(pd.sub) {
 				newSub = append(newSub, pd.sub[index:]...)
 			}
+			pd.sub = newSub
 		}
 	}
 
@@ -218,21 +249,27 @@ type AutoProgress struct {
 func (ap *AutoProgress) Start() {
 	ap.ticker = time.NewTicker(ap.duration)
 	go func() {
+		defer ap.ticker.Stop()
 		for _ = range ap.ticker.C {
 			percent := ap.progress.GetPercent() + ap.stepValue
 			if percent > ap.maxValue {
 				percent = ap.maxValue
 			}
-			ap.progress.Set(percent, ap.progress.GetStatus(), ap.progress.GetMessage())
+			ap.progress.update(percent, ap.progress.GetStatus(), ap.progress.GetMessage())
 			if percent >= ap.maxValue {
-				break
+				return
 			}
 		}
 	}()
 }
 
 func (ap *AutoProgress) Stop() {
-	ap.ticker.Stop()
+	if ap.ticker != nil {
+		ap.ticker.Stop()
+	}
+	if ap.progress.GetPercent() < ap.maxValue {
+		ap.progress.update(ap.maxValue, ap.progress.GetStatus(), ap.progress.GetMessage())
+	}
 }
 
 func newAutoProgress(progress ProgressSetter, stepValue int, duration time.Duration, maxValue int) *AutoProgress {
@@ -241,14 +278,18 @@ func newAutoProgress(progress ProgressSetter, stepValue int, duration time.Durat
 
 //Core Struct : WsProgress
 type WsProgress struct {
-	ws      *websocket.WsConnect `json:"_"`
-	Code    string               `json:"code"`
-	Message interface{}          `json:"message"`
-	Percent int                  `json:"percent"`
-	Status  string               `json:"status"`
-	auto    *AutoProgress
-	sub     []*SubProgress
-	mux     sync.Mutex
+	ws           *websocket.WsConnect `json:"_"`
+	Code         string               `json:"code"`
+	Message      interface{}          `json:"message"`
+	Percent      int                  `json:"percent"`
+	Status       string               `json:"status"`
+	auto         *AutoProgress
+	sub          []*SubProgress
+	mux          sync.Mutex
+	data         map[string]interface{}
+	delayed      bool
+	delayMessage bool
+	senderLock   sync.Mutex
 }
 
 func GetProgress(key string, code string) *WsProgress {
@@ -285,11 +326,7 @@ func (wsp *WsProgress) Done(message ...interface{}) {
 	wsp.Set(100, PROGRESS_SUCCESS, message...)
 }
 
-func (wsp *WsProgress) Set(percent int, status string, message ...interface{}) {
-	if wsp.auto != nil {
-		wsp.auto.Stop()
-		wsp.auto = nil
-	}
+func (wsp *WsProgress) update(percent int, status string, message ...interface{}) {
 	wsp.Percent = percent
 	wsp.Status = status
 	if len(message) > 0 {
@@ -299,14 +336,83 @@ func (wsp *WsProgress) Set(percent int, status string, message ...interface{}) {
 	wsp.SendMsg()
 }
 
+func (wsp *WsProgress) Set(percent int, status string, message ...interface{}) {
+	if wsp.auto != nil {
+		wsp.auto.Stop()
+		wsp.auto = nil
+	}
+	wsp.update(percent, status, message[0])
+}
+
+func (wsp *WsProgress) updateData(percent int, status string, message interface{}) bool {
+	dataChange := false
+	if wsp.data == nil {
+		wsp.data = make(map[string]interface{})
+	}
+
+	if wsp.data["percent"] != percent {
+		dataChange = true
+		wsp.data["percent"] = percent
+	}
+
+	if wsp.data["status"] != status {
+		wsp.data["status"] = status
+	}
+
+	if wsp.data["message"] != message {
+		wsp.data["message"] = message
+	}
+
+	wsp.data["code"] = wsp.Code
+
+	return dataChange
+}
+
+func (wsp *WsProgress) delaySend(timer *time.Timer) {
+	wsp.delayed = true
+	go func() {
+		for {
+			select {
+			case <-timer.C:
+				wsp.senderLock.Lock()
+				if wsp.delayMessage {
+					if wsp.ws != nil && wsp.ws.IsOpen() {
+						wsp.ws.SendMessage(wsp.data)
+						timer = time.NewTimer(100 * time.Millisecond)
+						wsp.delayMessage = false
+					} else {
+						wsp.delayed = false
+						wsp.delayMessage = false
+						wsp.senderLock.Unlock()
+						return
+					}
+				} else {
+					wsp.delayed = false
+					wsp.delayMessage = false
+					wsp.senderLock.Unlock()
+					return
+				}
+				wsp.senderLock.Unlock()
+			default:
+			}
+		}
+
+	}()
+}
+
 func (wsp *WsProgress) Send(percent int, status string, message interface{}) {
+	wsp.senderLock.Lock()
+	defer wsp.senderLock.Unlock()
+	if !wsp.updateData(percent, status, message) {
+		return
+	}
 	if wsp.ws != nil && wsp.ws.IsOpen() {
-		wsp.ws.SendMessage(map[string]interface{}{
-			"code":    wsp.Code,
-			"percent": percent,
-			"status":  status,
-			"message": message,
-		})
+		if !wsp.delayed {
+			wsp.ws.SendMessage(wsp.data)
+			wsp.delaySend(time.NewTimer(100 * time.Millisecond))
+		} else {
+			wsp.delayMessage = true
+		}
 	} else {
 		msg := ""
 		if message != nil {
@@ -323,7 +429,8 @@ func (wsp *WsProgress) Send(percent int, status string, message interface{}) {
 }
 
 func (wsp *WsProgress) SendMsg() {
-	if wsp.ws != nil && wsp.ws.IsOpen() {
+	wsp.Send(wsp.Percent, wsp.Status, wsp.Message)
+	/*if wsp.ws != nil && wsp.ws.IsOpen() {
 		wsp.ws.SendMessage(wsp)
 	} else {
 		msg := ""
@@ -337,7 +444,7 @@ func (wsp *WsProgress) SendMsg() {
 			}
 		}
 		logrus.Infof("Progress(%s) : percent = %d%%, status = %s, message = %s", wsp.Code, wsp.Percent, wsp.Status, msg)
-	}
+	}*/
 }
 
 func (wsp *WsProgress) AutoProgress(stepValue int, duration time.Duration, maxValue int, message ...interface{}) {
@@ -405,6 +512,8 @@ func (wsp *WsProgress) ProgressChanged(status string, message ...interface{}) {
 			if index < len(wsp.sub) {
 				newSub = append(newSub, wsp.sub[index:]...)
 			}
+
+			wsp.sub = newSub
 		}
 	}
 

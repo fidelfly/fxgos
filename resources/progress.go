@@ -1,9 +1,10 @@
 package resources
 
 import (
+	"net/http"
+
 	"github.com/lyismydg/fxgos/service"
 	"github.com/lyismydg/fxgos/websocket"
-	"net/http"
 
 	"github.com/lyismydg/fxgos/system"
 
@@ -18,7 +19,7 @@ func (ws *ProgressService) Setup(w http.ResponseWriter, r *http.Request) {
 	params := service.GetRequestVars(r, "code")
 	code := params["code"]
 
-	wsc := &websocket.WsConnect{Code: code}
+	wsc := &websocket.WsConnect{Code: code, Duration: 100}
 
 	err := websocket.SetupWebsocket(wsc, w, r)
 	if err != nil {
