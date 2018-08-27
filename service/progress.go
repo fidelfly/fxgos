@@ -341,7 +341,7 @@ func (wsp *WsProgress) Set(percent int, status string, message ...interface{}) {
 		wsp.auto.Stop()
 		wsp.auto = nil
 	}
-	wsp.update(percent, status, message[0])
+	wsp.update(percent, status, message...)
 }
 
 func (wsp *WsProgress) updateData(percent int, status string, message interface{}) bool {
