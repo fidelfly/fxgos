@@ -19,30 +19,36 @@ const (
 	PROGRESS_SUCCESS   = "success"
 )
 
-type ProgressSetter interface {
+type ProgressGetter interface {
 	GetPercent() int
 	GetStatus() string
 	GetMessage() interface{}
+}
+
+type ProgressSetter interface {
+	ProgressGetter
 	Set(percent int, status string, message ...interface{})
 	update(percent int, status string, message ...interface{})
 }
 
 type ProgressSubscriber interface {
 	ProgressSet(percent int, status string, messages ...interface{})
+	Done()
 }
 
 type ProgressSuperior interface {
-	ProgressChanged(status string, message ...interface{})
+	ProgressChanged(subProgress *SubProgress)
 }
 
 type SubProgress struct {
-	Superior    ProgressSuperior
+	superior    ProgressSuperior
 	Proporition int
 	Code        string
 	Message     interface{}
 	Percent     int
 	Status      string
 	Propagation bool
+	done        bool
 }
 
 func (sp *SubProgress) ProgressSet(percent int, status string, message ...interface{}) {
@@ -51,12 +57,16 @@ func (sp *SubProgress) ProgressSet(percent int, status string, message ...interf
 	if len(message) > 0 {
 		sp.Message = message[0]
 	}
-	if sp.Propagation && sp.Status == PROGRESS_EXCEPTION {
-		sp.Superior.ProgressChanged(sp.Status, message...)
-	} else {
-		sp.Superior.ProgressChanged("", message...)
-	}
 
+	sp.superior.ProgressChanged(sp)
+}
+
+func (sp *SubProgress) Done() {
+	sp.done = true
+}
+
+func (sp *SubProgress) IsDone() bool {
+	return sp.done
 }
 
 func NewProgressDispatcher(code string, subscriber ...ProgressSubscriber) *ProgressDispatcher {
@@ -108,6 +118,13 @@ func (pd *ProgressDispatcher) Success(message ...interface{}) {
 }
 
 func (pd *ProgressDispatcher) Done(status string, message ...interface{}) {
+	if len(status) == 0 {
+		if pd.status == PROGRESS_ACTIVE {
+			status = PROGRESS_SUCCESS
+		} else {
+			status = pd.status
+		}
+	}
 	if len(message) == 0 {
 		pd.Set(100, status, "")
 	} else {
@@ -211,55 +228,55 @@ func (pd *ProgressDispatcher) Step(stepValue int, message ...interface{}) {
 func (pd *ProgressDispatcher) NewSubProgress(proporition int) *SubProgress {
 	pd.mux.Lock()
 	defer pd.mux.Unlock()
-	sp := &SubProgress{Superior: pd, Proporition: proporition}
+	sp := &SubProgress{superior: pd, Proporition: proporition}
 	pd.sub = append(pd.sub, sp)
 	return sp
 }
 
-func (pd *ProgressDispatcher) ProgressChanged(status string, message ...interface{}) {
+func (pd *ProgressDispatcher) ProgressChanged(subProgress *SubProgress) {
 	pd.mux.Lock()
 	defer pd.mux.Unlock()
-	msg := pd.message
-	if len(message) > 0 {
-		msg = message[0]
-	}
-	percent := pd.percent
-
-	if len(status) > 0 {
-		pd.status = status
-	}
-
 	if pd.sub != nil && len(pd.sub) > 0 {
-		subok := int(0)
-		okindex := make([]int, len(pd.sub))
-		for index, sp := range pd.sub {
-			value := sp.Proporition * sp.Percent / 100
-			if sp.Status != PROGRESS_ACTIVE {
-				subok += value
-				okindex = append(okindex, index)
+		subValue := int(0)
+		index := -1
+		for i, sp := range pd.sub {
+			if sp == subProgress && sp.IsDone() {
+				index = i
+				pd.percent += sp.Percent
+			} else {
+				value := 0
+				if sp.IsDone() {
+					value = sp.Proporition
+				} else {
+					value = sp.Proporition * sp.Percent / 100
+				}
+				subValue += value
 			}
-			percent += value
 		}
 
-		if subok > 0 {
+		if index >= 0 {
 			newSub := make([]*SubProgress, 0)
-			pd.percent += subok
-			index := int(0)
-			for _, i := range okindex {
-				if i > index {
-					newSub = append(newSub, pd.sub[index:i]...)
-
-				}
-				index++
+			if index > 0 {
+				newSub = append(newSub, pd.sub[:index]...)
 			}
-			if index < len(pd.sub) {
-				newSub = append(newSub, pd.sub[index:]...)
+			if index < len(pd.sub)-1 {
+				newSub = append(newSub, pd.sub[index+1:]...)
 			}
 			pd.sub = newSub
 		}
+
+		percent := pd.percent + subValue
+		msg := pd.message
+		if subProgress.Message != nil {
+			msg = subProgress.Message
+		}
+
+		if subProgress.Propagation && subProgress.Status == PROGRESS_EXCEPTION {
+			pd.status = subProgress.Status
+		}
+		pd.notify(percent, pd.status, msg)
 	}
 
-	pd.notify(percent, pd.status, msg)
 }
 
 //Struct AutoProgress
@@ -499,7 +516,7 @@ func (wsp *WsProgress) Step(stepValue int, message ...interface{}) {
 func (wsp *WsProgress) NewSubProgress(proporition int) *SubProgress {
 	wsp.mux.Lock()
 	defer wsp.mux.Unlock()
-	sp := &SubProgress{Superior: wsp, Proporition: proporition}
+	sp := &SubProgress{superior: wsp, Proporition: proporition}
 	if wsp.sub == nil {
 		wsp.sub = make([]*SubProgress, 0)
 	}
@@ -507,49 +524,48 @@ func (wsp *WsProgress) NewSubProgress(proporition int) *SubProgress {
 	return sp
 }
 
-func (wsp *WsProgress) ProgressChanged(status string, message ...interface{}) {
+func (wsp *WsProgress) ProgressChanged(subProgress *SubProgress) {
 	wsp.mux.Lock()
 	defer wsp.mux.Unlock()
-	msg := wsp.Message
-	if len(message) > 0 {
-		msg = message[0]
-	}
-	percent := wsp.Percent
-
-	if len(status) > 0 {
-		wsp.Status = status
-	}
-
 	if wsp.sub != nil && len(wsp.sub) > 0 {
-		subok := int(0)
-		okindex := make([]int, len(wsp.sub))
-		for index, sp := range wsp.sub {
-			value := sp.Proporition * sp.Percent / 100
-			if sp.Status != PROGRESS_ACTIVE {
-				subok += value
-				okindex = append(okindex, index)
+		subValue := int(0)
+		index := -1
+		for i, sp := range wsp.sub {
+			if sp == subProgress && sp.IsDone() {
+				index = i
+				wsp.Percent += sp.Percent
+			} else {
+				value := 0
+				if sp.IsDone() {
+					value = sp.Proporition
+				} else {
+					value = sp.Proporition * sp.Percent / 100
+				}
+				subValue += value
 			}
-			percent += value
 		}
 
-		if subok > 0 {
+		if index >= 0 {
 			newSub := make([]*SubProgress, 0)
-			wsp.Percent += subok
-			index := int(0)
-			for _, i := range okindex {
-				if i > index {
-					newSub = append(newSub, wsp.sub[index:i]...)
-
-				}
-				index++
+			if index > 0 {
+				newSub = append(newSub, wsp.sub[:index]...)
 			}
-			if index < len(wsp.sub) {
-				newSub = append(newSub, wsp.sub[index:]...)
+			if index < len(wsp.sub)-1 {
+				newSub = append(newSub, wsp.sub[index+1:]...)
 			}
-
 			wsp.sub = newSub
 		}
+
+		percent := wsp.Percent + subValue
+		msg := wsp.Message
+		if subProgress.Message != nil {
+			msg = subProgress.Message
+		}
+
+		if subProgress.Propagation && subProgress.Status == PROGRESS_EXCEPTION {
+			wsp.Status = subProgress.Status
+		}
+		wsp.Send(percent, wsp.Status, msg)
 	}
 
-	wsp.Send(percent, wsp.Status, msg)
 }
