@@ -47,7 +47,6 @@ type SubProgress struct {
 	Percent     int
 	Status      string
 	Propagation bool
-	done        bool
 }
 
 func (sp *SubProgress) ProgressSet(percent int, status string, message ...interface{}) {
@@ -58,12 +57,10 @@ func (sp *SubProgress) ProgressSet(percent int, status string, message ...interf
 	}
 
 	sp.superior.ProgressChanged(sp)
-
-	sp.done = percent >= 100
 }
 
 func (sp *SubProgress) IsDone() bool {
-	return sp.done
+	return sp.Percent >= 100
 }
 
 func NewProgressDispatcher(code string, subscriber ...ProgressSubscriber) *ProgressDispatcher {
@@ -239,7 +236,7 @@ func (pd *ProgressDispatcher) ProgressChanged(subProgress *SubProgress) {
 		for i, sp := range pd.sub {
 			if sp == subProgress && sp.IsDone() {
 				index = i
-				pd.percent += sp.Percent
+				pd.percent += sp.Proporition
 			} else {
 				value := 0
 				if sp.IsDone() {
@@ -530,7 +527,7 @@ func (wsp *WsProgress) ProgressChanged(subProgress *SubProgress) {
 		for i, sp := range wsp.sub {
 			if sp == subProgress && sp.IsDone() {
 				index = i
-				wsp.Percent += sp.Percent
+				wsp.Percent += sp.Proporition
 			} else {
 				value := 0
 				if sp.IsDone() {
