@@ -73,9 +73,9 @@ func (asc *AuthServerConfig) authValidateMiddleware(next http.Handler) http.Hand
 }
 
 func (asc *AuthServerConfig) validateToken(w http.ResponseWriter, r *http.Request) (ti oauth2.TokenInfo, status bool) {
-	tokenRequest, grantType := service.IsTokenRequest(r)
+	tokenRequest, _ := service.IsTokenRequest(r)
 
-	if tokenRequest && oauth2.GrantType(grantType) != oauth2.Refreshing {
+	if tokenRequest {
 		status = true
 		return
 	}
@@ -98,10 +98,10 @@ func (asc *AuthServerConfig) validateToken(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if tokenRequest && oauth2.GrantType(grantType) == oauth2.Refreshing {
+	/*	if tokenRequest && oauth2.GrantType(grantType) == oauth2.Refreshing {
 		status = true
 		return
-	}
+	}*/
 
 	service.ResponseJSON(w, nil, service.TokenExpired, http.StatusUnauthorized)
 	status = false
