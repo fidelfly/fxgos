@@ -1,51 +1,57 @@
 package resources
 
 import (
-	"net/http"
-	"time"
-	"github.com/lyismydg/fxgos/service"
-	"github.com/lyismydg/fxgos/system"
-	"io/ioutil"
-	"github.com/sirupsen/logrus"
-	"github.com/lyismydg/fxgos/pkg/file"
-	"strconv"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/fidelfly/fxgo/httprxr"
+	"github.com/fidelfly/fxgo/logx"
+
+	"github.com/fidelfly/fxgo/utilities/filex"
+
+	"github.com/sirupsen/logrus"
+
+	"github.com/fidelfly/fxgos/system"
 )
 
 type ResourceAsset struct {
-	Id int64 `json:"id"`
-	Md5 string `json:"md5"`
-	Type string `json:"type"`
-	Size int64 `json:"size"`
-	Name string `json:"name"`
+	Id         int64     `json:"id"`
+	Md5        string    `json:"md5"`
+	Type       string    `json:"type"`
+	Size       int64     `json:"size"`
+	Name       string    `json:"name"`
 	CreateTime time.Time `json:"create_time"`
 }
 
 type AssetService struct {
-
 }
 
-func (as *AssetService) Post(w http.ResponseWriter, r * http.Request) {
+func (as *AssetService) Post(w http.ResponseWriter, r *http.Request) {
 	key := r.FormValue("key")
 	mf, h, err := r.FormFile(key)
 	defer func() {
 		if err != nil {
 			logrus.Error(err)
-			service.ResponseJSON(w, nil, service.ExceptionError(err), http.StatusInternalServerError)
+			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 			return
 		}
 	}()
 	if err != nil {
 		return
 	}
-	defer mf.Close()
+	defer func() {
+		logx.CaptureError(mf.Close())
+	}()
 
 	data, err := ioutil.ReadAll(mf)
-	if err !=  nil {
+	if err != nil {
 		return
 	}
 	asset := new(system.Assets)
-	asset.Md5 = file.GetBytesMd5(data)
+	asset.Md5 = filex.CalculateBytesMd5(data)
 
 	find, _ := system.DbEngine.Where("md5 = ? ", asset.Md5).Get(asset)
 
@@ -61,24 +67,22 @@ func (as *AssetService) Post(w http.ResponseWriter, r * http.Request) {
 		}
 	}
 
-	assetRes := &ResourceAsset{
-		Id: asset.Id,
-		Md5: asset.Md5,
-		Size: asset.Size,
-		Type: asset.Type,
-		Name: asset.Name,
+	httprxr.ResponseJSON(w, http.StatusOK, ResourceAsset{
+		Id:         asset.Id,
+		Md5:        asset.Md5,
+		Size:       asset.Size,
+		Type:       asset.Type,
+		Name:       asset.Name,
 		CreateTime: asset.CreateTime,
-	}
-
-	service.ResponseJSON(w, nil, assetRes, http.StatusOK)
+	})
 
 }
 
-func (as *AssetService) Get(w http.ResponseWriter, r * http.Request) {
-	params := service.GetRequestVars(r, "id")
+func (as *AssetService) Get(w http.ResponseWriter, r *http.Request) {
+	params := httprxr.GetRequestVars(r, "id")
 	id, _ := strconv.ParseInt(params["id"], 10, 64)
 	if id == 0 {
-		service.ResponseJSON(w, nil, service.InvalidParamError("id"), http.StatusBadRequest)
+		httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.InvalidParamError("id"))
 		return
 	}
 
@@ -88,22 +92,16 @@ func (as *AssetService) Get(w http.ResponseWriter, r * http.Request) {
 
 	find, err := system.DbEngine.Get(&asset)
 	if err != nil {
-		service.ResponseJSON(w, nil, service.ExceptionError(err), http.StatusInternalServerError)
+		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 		return
 	}
 	if find {
 		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", asset.Name))
 		w.Header().Set("Content-Type", r.Header.Get("Content-Type"))
 		w.WriteHeader(http.StatusOK)
-		w.Write(asset.Data)
+		logx.CaptureError(w.Write(asset.Data))
 	} else {
-		service.ResponseJSON(w, nil, nil, http.StatusNotFound)
+		httprxr.ResponseJSON(w, http.StatusNotFound, nil)
 	}
 
-}
-
-func init()  {
-	asset := new(AssetService)
-	myRouter.Root().Path(service.GetProtectedPath("asset")).Methods("post").HandlerFunc(asset.Post)
-	myRouter.Root().Path(service.GetPublicPath("asset/{id}")).Methods("get").HandlerFunc(asset.Get)
 }

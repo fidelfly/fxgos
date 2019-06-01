@@ -1,11 +1,11 @@
 package app
 
 import (
-	"github.com/lyismydg/fxgos/system"
-	"github.com/lyismydg/fxgos/router"
-	"net/http"
+	"github.com/fidelfly/fxgo"
 	"github.com/sirupsen/logrus"
-	_ "github.com/lyismydg/fxgos/caches"
+
+	_ "github.com/fidelfly/fxgos/caches"
+	"github.com/fidelfly/fxgos/system"
 )
 
 func StartService() (err error) {
@@ -15,39 +15,31 @@ func StartService() (err error) {
 		}
 	}()
 	// Parse Config File
-	err = system.InitConfig()
+	err = fxgo.InitTomlConfig("config.toml", &system.Configuration)
 	if err != nil {
 		return
 	}
 
 	// Setup logs
-	err = system.SetupLog()
-	if err != nil {
-		return
-	}
+	fxgo.SetupLogs(&system.Runtime.LogConfig)
 
 	// Init Database
-	err = system.InitDatabase(*system.Database)
+	err = initDatabase(*system.Database)
 	if err != nil {
 		return
 	}
 
 	// Setup Router
-	myRouter, err := router.SetupRouter()
+	myRouter, err := setupRouter()
 	if err != nil {
 		return
 	}
 
 	//start Server
-	server := &http.Server{
-		Handler: myRouter,
-		Addr: ":" + system.Runtime.Port,
-	}
-
 	if system.SupportTLS() {
-		logrus.Fatal(server.ListenAndServeTLS(system.TLS.CertFile, system.TLS.KeyFile))
+		fxgo.ListenAndServeTLS(system.TLS.CertFile, system.TLS.KeyFile, myRouter, system.Runtime.Port)
 	} else {
-		logrus.Fatal(server.ListenAndServe())
+		fxgo.ListenAndServe(myRouter, system.Runtime.Port)
 	}
 
 	return

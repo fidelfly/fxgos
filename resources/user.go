@@ -1,28 +1,34 @@
 package resources
 
 import (
-	"net/http"
-	"github.com/lyismydg/fxgos/service"
-	"strconv"
-	"github.com/lyismydg/fxgos/system"
 	"errors"
-	"github.com/lyismydg/fxgos/auth"
+	"net/http"
+	"strconv"
+
+	"github.com/fidelfly/fxgo/authx"
+	"github.com/fidelfly/fxgo/httprxr"
+	"github.com/fidelfly/fxgo/logx"
+
+	"github.com/fidelfly/fxgos/service"
+
+	"github.com/fidelfly/fxgos/auth"
+	"github.com/fidelfly/fxgos/system"
 )
 
 type ResourceUser struct {
-	Id int64 `json:"id"`
-	Code string `json:"code"`
-	Name string `json:"name"`
-	Avatar int64 `json:"avatar"`
+	Id     int64  `json:"id"`
+	Code   string `json:"code"`
+	Name   string `json:"name"`
+	Avatar int64  `json:"avatar"`
 }
 type UserService struct {
-
 }
 
-const duplicateUserCode  = "duplicate_user_code"
+const duplicateUserCode = "duplicate_user_code"
+
 func (us *UserService) Get(w http.ResponseWriter, r *http.Request) {
-	params := service.GetRequestVars(r, "userId")
-	userId, _ := strconv.ParseInt(params["userId"],10, 64)
+	params := httprxr.GetRequestVars(r, "userId")
+	userId, _ := strconv.ParseInt(params["userId"], 10, 64)
 	if userId == 0 {
 		user := service.GetUserInfo(r)
 		userId = user.Id
@@ -31,16 +37,16 @@ func (us *UserService) Get(w http.ResponseWriter, r *http.Request) {
 		user := new(ResourceUser)
 		ok, err := system.DbEngine.SQL("select a.id, a.code, a.name, a.avatar from user as a where a.id = ?", userId).Get(user)
 		if ok {
-			service.ResponseJSON(w, nil, user, http.StatusOK)
+			httprxr.ResponseJSON(w, http.StatusOK, user)
 			return
 		}
-		service.ResponseJSON(w, nil, service.ExceptionError(err), http.StatusNotFound)
+		httprxr.ResponseJSON(w, http.StatusNotFound, httprxr.ExceptionMessage(err))
 	}
-	service.ResponseJSON(w, nil, service.InvalidParamError("userId"), http.StatusBadRequest)
+	httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.InvalidParamError("userId"))
 }
 
 func (us *UserService) Post(w http.ResponseWriter, r *http.Request) {
-	params := service.GetRequestVars(r,"userId", "name", "avatar")
+	params := httprxr.GetRequestVars(r, "userId", "name", "avatar")
 	userId, _ := strconv.ParseInt(params["userId"], 10, 64)
 
 	if userId == 0 {
@@ -53,7 +59,7 @@ func (us *UserService) Post(w http.ResponseWriter, r *http.Request) {
 	}
 	find, err := system.DbEngine.Get(user)
 	if err != nil {
-		service.ResponseJSON(w, nil, service.ExceptionError(err), http.StatusInternalServerError)
+		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 		return
 	}
 	if find {
@@ -63,28 +69,28 @@ func (us *UserService) Post(w http.ResponseWriter, r *http.Request) {
 		if len(params["avatar"]) > 0 {
 			user.Avatar, err = strconv.ParseInt(params["avatar"], 10, 64)
 			if err != nil {
-				service.ResponseJSON(w, nil, service.InvalidParamError("avatar"), http.StatusBadRequest)
+				httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.InvalidParamError("avatar"))
 				return
 			}
 		}
 		_, err = system.DbEngine.Update(user)
 		if err != nil {
-			service.ResponseJSON(w, nil, service.ExceptionError(err), http.StatusInternalServerError)
+			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 			return
 		}
 
 		userRes := ResourceUser{
-			Id: user.Id,
-			Code: user.Code,
-			Name: user.Name,
+			Id:     user.Id,
+			Code:   user.Code,
+			Name:   user.Name,
 			Avatar: user.Avatar,
 		}
 
-		service.ResponseJSON(w, nil, userRes, http.StatusOK)
+		httprxr.ResponseJSON(w, http.StatusOK, userRes)
 		return
 	}
 
-	service.ResponseJSON(w, nil, service.ExceptionError(errors.New("Record Not Found!")), http.StatusNotFound)
+	httprxr.ResponseJSON(w, http.StatusNotFound, httprxr.ExceptionMessage(errors.New("record is not found")))
 
 }
 
@@ -93,11 +99,11 @@ func (us *UserService) Register(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	password := r.FormValue("password")
 	if len(code) == 0 {
-		service.ResponseJSON(w, nil, service.InvalidParamError("code"), http.StatusOK)
+		httprxr.ResponseJSON(w, http.StatusOK, httprxr.InvalidParamError("code"))
 		return
 	}
 	if len(password) == 0 {
-		service.ResponseJSON(w, nil, service.InvalidParamError("password"), http.StatusOK)
+		httprxr.ResponseJSON(w, http.StatusOK, httprxr.InvalidParamError("password"))
 		return
 	}
 	if len(name) == 0 {
@@ -109,16 +115,16 @@ func (us *UserService) Register(w http.ResponseWriter, r *http.Request) {
 	err := session.Begin()
 	defer func() {
 		if err != nil {
-			service.ResponseJSON(w, nil, service.ExceptionError(err), http.StatusInternalServerError)
+			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 		}
 	}()
 	if err != nil {
 		return
 	}
 
-	user := system.User{Code:code}
+	user := system.User{Code: code}
 	if exist, _ := session.Get(&user); exist {
-		service.ResponseJSON(w, nil, service.NewResponseError(duplicateUserCode, "Duplicate code is found!"), http.StatusBadRequest)
+		httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.NewErrorMessage(duplicateUserCode, "Duplicate code is found!"))
 		return
 	}
 
@@ -129,7 +135,7 @@ func (us *UserService) Register(w http.ResponseWriter, r *http.Request) {
 	user.Password = password
 	_, err = session.Insert(&user)
 	if err != nil {
-		session.Rollback()
+		logx.CaptureError(session.Rollback())
 		return
 	}
 
@@ -138,17 +144,66 @@ func (us *UserService) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := service.ResponseData{}
+	data := httprxr.ResponseData{}
 	data["user_id"] = user.Id
 
-	service.ResponseJSON(w, nil, data, http.StatusOK)
+	httprxr.ResponseJSON(w, http.StatusOK, data)
 }
 
+const PasswordUnchange = "PASSWORD_UNCHANGE"
+const InvalidOrgPassword = "INVALID_ORG_PASSWORD"
 
-func init() {
-	user := new(UserService)
-	path := service.GetProtectedPath("user")
-	myRouter.Root().Path(path).Methods("get").HandlerFunc(user.Get)
-	myRouter.Root().Path(path).Methods("post").HandlerFunc(user.Post)
-	myRouter.Root().Path(service.GetPublicPath("user")).Methods("post").HandlerFunc(user.Register)
+func (us *UserService) updatePassword(w http.ResponseWriter, r *http.Request) {
+	params := httprxr.GetRequestVars(r, "orgPwd", "newPwd")
+	newPwd := params["newPwd"]
+	orgPwd := params["orgPwd"]
+
+	if len(newPwd) == 0 {
+		httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.InvalidParamError("newPwd"))
+		return
+	}
+	if len(orgPwd) == 0 {
+		httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.InvalidParamError("orgPwd"))
+		return
+	}
+
+	if newPwd == orgPwd {
+		httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.NewErrorMessage(PasswordUnchange, "New password is same as the original password."))
+		return
+	}
+
+	userInfo := service.GetUserInfo(r)
+
+	if userInfo == nil {
+		httprxr.ResponseJSON(w, http.StatusUnauthorized, httprxr.NewErrorMessage(authx.UnauthorizedErrorCode, "unauthorized"))
+		return
+	}
+
+	user := &system.User{
+		Id: userInfo.Id,
+	}
+
+	if ok, err := system.DbEngine.Get(user); ok {
+		if auth.EncodePassword(user.Code, orgPwd) != user.Password {
+			httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.NewErrorMessage(InvalidOrgPassword, "Original password is wrong"))
+			return
+		}
+
+		user.Password = auth.EncodePassword(user.Code, newPwd)
+
+		if _, err := system.DbEngine.Update(user); err != nil {
+			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+			return
+		} else {
+			data := make(map[string]interface{})
+			data["status"] = "ok"
+			httprxr.ResponseJSON(w, http.StatusOK, data)
+			return
+		}
+
+	} else {
+		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+		return
+	}
+
 }

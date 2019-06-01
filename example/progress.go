@@ -3,19 +3,19 @@ package example
 import (
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
-	"sync"
-
-	"github.com/lyismydg/fxgos/service"
+	"github.com/fidelfly/fxgo"
+	"github.com/fidelfly/fxgo/httprxr"
 )
 
 type ProgressExample struct {
 }
 
 func (pe *ProgressExample) ServiceProgress(w http.ResponseWriter, r *http.Request) {
-	params := service.GetRequestVars(r, "progressKey")
-	progress := service.GetProgress(params["progressKey"], "progressDemo")
+	params := httprxr.GetRequestVars(r, "progressKey")
+	progress := fxgo.GetProgress(params["progressKey"], "progressDemo")
 
 	for i := 1; i <= 20; i++ {
 		progress.Active(i, fmt.Sprintf("Main Progress %d%%", i))
@@ -41,12 +41,12 @@ func (pe *ProgressExample) ServiceProgress(w http.ResponseWriter, r *http.Reques
 
 	time.Sleep(1 * time.Second)
 
-	service.ResponseJSON(w, nil, map[string]interface{}{"ProgressDone": true}, http.StatusOK)
+	httprxr.ResponseJSON(w, http.StatusOK, map[string]interface{}{"ProgressDone": true})
 
 }
 
-func goProgress(code string, step int, duration time.Duration, progressSubscribers ...service.ProgressSubscriber) {
-	pd := service.NewProgressDispatcher(code, progressSubscribers...)
+func goProgress(code string, step int, duration time.Duration, progressSubscribers ...httprxr.ProgressSubscriber) {
+	pd := httprxr.NewProgressDispatcher(code, progressSubscribers...)
 	defer pd.Success()
 	ticker := time.NewTicker(duration)
 	defer ticker.Stop()
@@ -66,5 +66,5 @@ func goProgress(code string, step int, duration time.Duration, progressSubscribe
 
 func init() {
 	pe := &ProgressExample{}
-	myRouter.Router().Path("/progress").HandlerFunc(pe.ServiceProgress)
+	fxgo.Router().Path("/example/progress").HandlerFunc(pe.ServiceProgress)
 }

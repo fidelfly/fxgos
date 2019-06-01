@@ -1,6 +1,6 @@
 package main
 
-import "github.com/lyismydg/fxgos/app"
+import "github.com/fidelfly/fxgos/app"
 
 func main() {
 	err := app.StartService()

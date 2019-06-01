@@ -1,11 +1,14 @@
 package system
 
-var UserCache *MemCache
-var LockManager = newLockerManager()
-const TokenPath  = "/fxgos/token"
-const ProtectedPrefix  = "/fxgos"
-const PublicPrefix  = "/public"
+import (
+	"github.com/fidelfly/fxgo/cachex"
+	"github.com/go-xorm/xorm"
+)
 
-var SharedLocker  = &SharedLock{
-	Module: "module",
-}
+var UserCache *cachex.MemCache
+
+const TokenPath = "/fxgos/token"
+const ProtectedPrefix = "/fxgos"
+const PublicPrefix = "/public"
+
+var DbEngine *xorm.Engine
