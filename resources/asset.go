@@ -9,10 +9,7 @@ import (
 
 	"github.com/fidelfly/fxgo/httprxr"
 	"github.com/fidelfly/fxgo/logx"
-
 	"github.com/fidelfly/fxgo/utilities/filex"
-
-	"github.com/sirupsen/logrus"
 
 	"github.com/fidelfly/fxgos/system"
 )
@@ -34,7 +31,7 @@ func (as *AssetService) Post(w http.ResponseWriter, r *http.Request) {
 	mf, h, err := r.FormFile(key)
 	defer func() {
 		if err != nil {
-			logrus.Error(err)
+			logx.Error(err)
 			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 			return
 		}

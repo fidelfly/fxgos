@@ -2,7 +2,7 @@ package app
 
 import (
 	"github.com/fidelfly/fxgo"
-	"github.com/sirupsen/logrus"
+	"github.com/fidelfly/fxgo/logx"
 
 	_ "github.com/fidelfly/fxgos/caches"
 	"github.com/fidelfly/fxgos/system"
@@ -11,7 +11,7 @@ import (
 func StartService() (err error) {
 	defer func() {
 		if err != nil {
-			logrus.Error(err)
+			logx.Error(err)
 		}
 	}()
 	// Parse Config File

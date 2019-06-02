@@ -3,9 +3,9 @@ package app
 import (
 	"fmt"
 
+	"github.com/fidelfly/fxgo/logx"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
-	"github.com/sirupsen/logrus"
 
 	"github.com/fidelfly/fxgos/system"
 )
@@ -15,9 +15,10 @@ func initDatabase(config system.DatabaseProperties) (err error) {
 	if err == nil {
 		err = system.DbEngine.Ping()
 		if err == nil {
-			logrus.Info("Database is connected!")
+			logx.Info("Database is connected!")
 		} else {
-			panic(err)
+			logx.Errorf("Can't connect to database")
+			//panic(err)
 		}
 	}
 	return
