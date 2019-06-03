@@ -7,7 +7,8 @@ import (
 )
 
 func init() {
-	fxgo.AddRouterHook(setupRouter)
+	//fxgo.AddRouterHook(setupRouter)
+	setupRouter()
 }
 
 func setupRouter() {
