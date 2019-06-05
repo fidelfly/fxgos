@@ -10,14 +10,14 @@ import (
 )
 
 type UserInfo struct {
-	Id   int64
+	ID   int64
 	Code string
 }
 
 func userInfoResolver(key string) interface{} {
-	userId, _ := strconv.ParseInt(key, 10, 64)
+	userID, _ := strconv.ParseInt(key, 10, 64)
 	userInfo := new(UserInfo)
-	_, err := system.DbEngine.SQL("select a.id, a.code from user as a where a.id = ?", userId).Get(userInfo)
+	_, err := system.DbEngine.SQL("select a.id, a.code from user as a where a.id = ?", userID).Get(userInfo)
 	if err != nil {
 		logx.Errorf("error found during reading user(=%s) information from database for cache", key)
 	}

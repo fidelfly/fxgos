@@ -7,25 +7,25 @@ import (
 )
 
 func init() {
-	//fxgo.AddRouterHook(setupRouter)
+	// fxgo.AddRouterHook(setupRouter)
 	setupRouter()
 }
 
 func setupRouter() {
 	var pRouter = fxgo.ProtectPrefix(system.ProtectedPrefix)
 
-	//asset
+	// asset
 	asset := new(AssetService)
 	pRouter.Path("/asset").Methods("post").HandlerFunc(asset.Post)
 	fxgo.Router().Path(system.GetPublicPath("asset/{id}")).Methods("get").HandlerFunc(asset.Get)
 
-	//user
+	// user
 	user := new(UserService)
 	pRouter.Path("/user").Methods("get").HandlerFunc(user.Get)
 	pRouter.Path("/user").Methods("post").HandlerFunc(user.Post)
 	fxgo.Router().Path(system.GetPublicPath("user")).Methods("post").HandlerFunc(user.Register)
 	pRouter.Path("/password").Methods("post").HandlerFunc(user.updatePassword)
 
-	//logout
+	// logout
 	pRouter.Path("/logout").Handler(fxgo.AttachFuncMiddleware(logout, fxgo.Router().AuthorizeDisposeMiddleware))
 }

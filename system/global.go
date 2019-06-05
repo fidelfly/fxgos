@@ -7,8 +7,11 @@ import (
 
 var UserCache *cachex.MemCache
 
-const TokenPath = "/fxgos/token"
-const ProtectedPrefix = "/fxgos"
-const PublicPrefix = "/public"
+// nolint:gosec
+const (
+	TokenPath       = "/fxgos/token"
+	ProtectedPrefix = "/fxgos"
+	PublicPrefix    = "/public"
+)
 
 var DbEngine *xorm.Engine

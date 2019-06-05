@@ -5,7 +5,7 @@ import (
 )
 
 type User struct {
-	Id         int64 `xorm:"autoincr"`
+	ID         int64 `xorm:"autoincr id"`
 	Code       string
 	Name       string
 	Avatar     int64
@@ -14,10 +14,10 @@ type User struct {
 }
 
 type TraceLog struct {
-	Id         int64 `xorm:"autoincr"`
-	UserId     int64
-	User       string
-	RequestUrl string
+	ID         int64 `xorm:"autoincr id"`
+	UserID     int64
+	User       string    `xorm:"user_id"`
+	RequestURL string    `xorm:"request_url"`
 	LogTime    time.Time `xorm:"created"`
 	Code       string
 	Type       string
@@ -26,7 +26,7 @@ type TraceLog struct {
 }
 
 type Assets struct {
-	Id         int64 `xorm:"autoincr"`
+	ID         int64 `xorm:"autoincr id"`
 	Md5        string
 	Type       string
 	Size       int64

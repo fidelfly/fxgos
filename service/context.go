@@ -31,20 +31,19 @@ func GetUserInfo(r *http.Request) *caches.UserInfo {
 	return nil
 }
 
-//export
 func ResourceLockedError(action lockx.Action) httprxr.ResponseMessage {
 	var data map[string]interface{}
 	if action != nil {
-		if userId, err := strconv.ParseInt(action.GetOwnerKey(), 10, 64); err != nil {
+		if userID, err := strconv.ParseInt(action.GetOwnerKey(), 10, 64); err != nil {
 			panic(errors.New("owner's key of lock action can not be converted to int64"))
 		} else {
 			data = make(map[string]interface{})
 			user := system.User{
-				Id: userId,
+				ID: userID,
 			}
 			_, err := system.DbEngine.Get(&user)
 			if err != nil {
-				data["user"] = userId
+				data["user"] = userID
 			} else {
 				data["user"] = user.Name
 			}

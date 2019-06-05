@@ -1,4 +1,4 @@
-package app
+package main
 
 import (
 	"net/http"
@@ -14,18 +14,21 @@ import (
 	"github.com/fidelfly/fxgos/system"
 )
 
-func setupRouter() (router *fxgo.RootRouter, err error) {
-	//enable router audit
+func setupRouter() (router *fxgo.RootRouter) {
+	// enable router audit
 	router = fxgo.EnableRouterAudit()
 
-	//setup router authorize route
+	// setup router authorize route
 	client := system.OAuth2.Client[0]
-	authServer := fxgo.SetupPasswordAuthorizeServer(&authx.AuthClient{ID: client.Id, Secret: client.Secret, Domain: client.Domain}, auth.AuthorizationHandler, "./token")
+	authServer := fxgo.SetupPasswordAuthorizeServer(
+		&authx.AuthClient{ID: client.ID, Secret: client.Secret, Domain: client.Domain},
+		auth.AuthorizationHandler,
+		"./token")
 	fxgo.SetupAuthorizeRoute(system.TokenPath, authServer)
 
 	router.Use(contextMiddleware)
 
-	//setup route table
+	// setup route table
 	fxgo.AttachHookRoute()
 	fxgo.SetupProgressRoute(system.GetProtectedPath("/progress"), true)
 	return

@@ -1,4 +1,4 @@
-package app
+package main
 
 import (
 	"github.com/fidelfly/fxgo"
@@ -24,23 +24,20 @@ func StartService() (err error) {
 	fxgo.SetupLogs(&system.Runtime.LogConfig)
 
 	// Init Database
-	err = initDatabase(*system.Database)
+	err = initDatabase(system.Database)
 	if err != nil {
 		return
 	}
 
 	// Setup Router
-	myRouter, err := setupRouter()
-	if err != nil {
-		return
-	}
+	myRouter := setupRouter()
 
-	//start Server
+	// start Server
 	if system.SupportTLS() {
 		fxgo.ListenAndServeTLS(system.TLS.CertFile, system.TLS.KeyFile, myRouter, system.Runtime.Port)
 	} else {
 		fxgo.ListenAndServe(myRouter, system.Runtime.Port)
 	}
 
-	return
+	return nil
 }

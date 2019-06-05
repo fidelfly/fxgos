@@ -55,7 +55,7 @@ type OAuth2Properties struct {
 }
 
 type AuthClient struct {
-	Id     string
+	ID     string
 	Secret string
 	Domain string
 }

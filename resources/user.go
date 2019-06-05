@@ -16,7 +16,7 @@ import (
 )
 
 type ResourceUser struct {
-	Id     int64  `json:"id"`
+	ID     int64  `json:"id"`
 	Code   string `json:"code"`
 	Name   string `json:"name"`
 	Avatar int64  `json:"avatar"`
@@ -28,34 +28,34 @@ const duplicateUserCode = "duplicate_user_code"
 
 func (us *UserService) Get(w http.ResponseWriter, r *http.Request) {
 	params := httprxr.GetRequestVars(r, "userId")
-	userId, _ := strconv.ParseInt(params["userId"], 10, 64)
-	if userId == 0 {
+	userID, _ := strconv.ParseInt(params["userId"], 10, 64)
+	if userID == 0 {
 		user := service.GetUserInfo(r)
-		userId = user.Id
+		userID = user.ID
 	}
-	if userId > 0 {
+	if userID > 0 {
 		user := new(ResourceUser)
-		ok, err := system.DbEngine.SQL("select a.id, a.code, a.name, a.avatar from user as a where a.id = ?", userId).Get(user)
+		ok, err := system.DbEngine.SQL("select a.id, a.code, a.name, a.avatar from user as a where a.id = ?", userID).Get(user)
 		if ok {
 			httprxr.ResponseJSON(w, http.StatusOK, user)
 			return
 		}
 		httprxr.ResponseJSON(w, http.StatusNotFound, httprxr.ExceptionMessage(err))
 	}
-	httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.InvalidParamError("userId"))
+	httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.InvalidParamError("userID"))
 }
 
 func (us *UserService) Post(w http.ResponseWriter, r *http.Request) {
 	params := httprxr.GetRequestVars(r, "userId", "name", "avatar")
-	userId, _ := strconv.ParseInt(params["userId"], 10, 64)
+	userID, _ := strconv.ParseInt(params["userId"], 10, 64)
 
-	if userId == 0 {
+	if userID == 0 {
 		userInfo := service.GetUserInfo(r)
-		userId = userInfo.Id
+		userID = userInfo.ID
 	}
 
 	user := &system.User{
-		Id: userId,
+		ID: userID,
 	}
 	find, err := system.DbEngine.Get(user)
 	if err != nil {
@@ -80,7 +80,7 @@ func (us *UserService) Post(w http.ResponseWriter, r *http.Request) {
 		}
 
 		userRes := ResourceUser{
-			Id:     user.Id,
+			ID:     user.ID,
 			Code:   user.Code,
 			Name:   user.Name,
 			Avatar: user.Avatar,
@@ -131,7 +131,7 @@ func (us *UserService) Register(w http.ResponseWriter, r *http.Request) {
 	user.Name = name
 
 	password = auth.EncodePassword(code, password)
-	//fmt.Println("Password : " + password)
+	// fmt.Println("Password : " + password)
 	user.Password = password
 	_, err = session.Insert(&user)
 	if err != nil {
@@ -145,7 +145,7 @@ func (us *UserService) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := httprxr.ResponseData{}
-	data["user_id"] = user.Id
+	data["user_id"] = user.ID
 
 	httprxr.ResponseJSON(w, http.StatusOK, data)
 }
@@ -168,7 +168,11 @@ func (us *UserService) updatePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if newPwd == orgPwd {
-		httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.NewErrorMessage(PasswordUnchange, "New password is same as the original password."))
+		httprxr.ResponseJSON(
+			w,
+			http.StatusBadRequest,
+			httprxr.NewErrorMessage(PasswordUnchange, "New password is same as the original password."),
+		)
 		return
 	}
 
@@ -180,7 +184,7 @@ func (us *UserService) updatePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := &system.User{
-		Id: userInfo.Id,
+		ID: userInfo.ID,
 	}
 
 	if ok, err := system.DbEngine.Get(user); ok {
@@ -191,19 +195,20 @@ func (us *UserService) updatePassword(w http.ResponseWriter, r *http.Request) {
 
 		user.Password = auth.EncodePassword(user.Code, newPwd)
 
-		if _, err := system.DbEngine.Update(user); err != nil {
+		if _, terr := system.DbEngine.Update(user); terr != nil {
 			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 			return
-		} else {
-			data := make(map[string]interface{})
-			data["status"] = "ok"
-			httprxr.ResponseJSON(w, http.StatusOK, data)
-			return
 		}
+		data := make(map[string]interface{})
+		data["status"] = "ok"
+		httprxr.ResponseJSON(w, http.StatusOK, data)
+		return
 
-	} else {
+	} else if err != nil {
+		logx.Error(err)
 		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 		return
 	}
+	httprxr.ResponseJSON(w, http.StatusNotFound, nil)
 
 }

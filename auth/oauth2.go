@@ -21,7 +21,7 @@ func AuthorizationHandler(username, password string) (userID string, err error) 
 	encodedPwd := EncodePassword(username, password)
 	ok, err := system.DbEngine.Where("code = ? and password = ?", username, encodedPwd).Get(&user)
 	if ok {
-		userID = strconv.FormatInt(user.Id, 10)
+		userID = strconv.FormatInt(user.ID, 10)
 	}
 	return
 }

@@ -55,11 +55,10 @@ func goProgress(code string, step int, duration time.Duration, progressSubscribe
 		case <-ticker.C:
 			if pd.GetPercent()+step > 100 {
 				return
-			} else {
-				pd.Step(step, fmt.Sprintf("Progress %s = %d", code, pd.GetPercent()+step))
 			}
+			pd.Step(step, fmt.Sprintf("Progress %s = %d", code, pd.GetPercent()+step))
 		default:
-
+			continue
 		}
 	}
 }

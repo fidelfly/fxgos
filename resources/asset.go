@@ -9,13 +9,13 @@ import (
 
 	"github.com/fidelfly/fxgo/httprxr"
 	"github.com/fidelfly/fxgo/logx"
-	"github.com/fidelfly/fxgo/utilities/filex"
+	"github.com/fidelfly/fxgo/pkg/filex"
 
 	"github.com/fidelfly/fxgos/system"
 )
 
 type ResourceAsset struct {
-	Id         int64     `json:"id"`
+	ID         int64     `json:"id"`
 	Md5        string    `json:"md5"`
 	Type       string    `json:"type"`
 	Size       int64     `json:"size"`
@@ -65,7 +65,7 @@ func (as *AssetService) Post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httprxr.ResponseJSON(w, http.StatusOK, ResourceAsset{
-		Id:         asset.Id,
+		ID:         asset.ID,
 		Md5:        asset.Md5,
 		Size:       asset.Size,
 		Type:       asset.Type,
@@ -84,7 +84,7 @@ func (as *AssetService) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	asset := system.Assets{
-		Id: id,
+		ID: id,
 	}
 
 	find, err := system.DbEngine.Get(&asset)
