@@ -20,10 +20,13 @@ func setupRouter() (router *fxgo.RootRouter) {
 
 	// setup router authorize route
 	client := system.OAuth2.Client[0]
-	authServer := fxgo.SetupPasswordAuthorizeServer(
+	tokenStore, _ := authx.NewFileTokenStore("./token")
+	authServer := authx.SetupPasswordAuthServer(
 		&authx.AuthClient{ID: client.ID, Secret: client.Secret, Domain: client.Domain},
 		auth.AuthorizationHandler,
-		"./token")
+		tokenStore,
+		authx.WebTokenCfg(),
+	)
 	fxgo.SetupAuthorizeRoute(system.TokenPath, authServer)
 
 	router.Use(contextMiddleware)
