@@ -27,7 +27,10 @@ func setupRouter() (router *fxgo.RootRouter) {
 		tokenStore,
 		authx.WebTokenCfg(),
 	)
-	fxgo.SetupAuthorizeRoute(system.TokenPath, authServer)
+
+	system.TokenKeeper.Setup(authServer, system.TokenPath)
+
+	fxgo.AttachRouterPlugin(system.TokenKeeper)
 
 	router.Use(contextMiddleware)
 

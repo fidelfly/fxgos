@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	// fxgo.AddRouterHook(setupRouter)
+	fxgo.AddRouterHook(setupRouter)
 	setupRouter()
 }
 
@@ -27,5 +27,5 @@ func setupRouter() {
 	pRouter.Path("/password").Methods("post").HandlerFunc(user.updatePassword)
 
 	// logout
-	pRouter.Path("/logout").Handler(fxgo.AttachFuncMiddleware(logout, fxgo.Router().AuthorizeDisposeMiddleware))
+	pRouter.Path("/logout").Handler(fxgo.AttachFuncMiddleware(logout, system.TokenKeeper.AuthorizeDisposeMiddleware))
 }

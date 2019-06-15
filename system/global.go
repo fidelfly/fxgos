@@ -1,6 +1,7 @@
 package system
 
 import (
+	"github.com/fidelfly/fxgo"
 	"github.com/fidelfly/fxgo/cachex"
 	"github.com/go-xorm/xorm"
 )
@@ -15,3 +16,5 @@ const (
 )
 
 var DbEngine *xorm.Engine
+
+var TokenKeeper = &fxgo.TokenIssuer{}
