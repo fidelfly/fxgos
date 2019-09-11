@@ -2,11 +2,11 @@ package system
 
 import (
 	"github.com/fidelfly/fxgo"
-	"github.com/fidelfly/fxgo/cachex"
+	"github.com/fidelfly/fxgo/cachex/mcache"
 	"github.com/go-xorm/xorm"
 )
 
-var UserCache *cachex.MemCache
+var UserCache *mcache.MemCache
 
 // nolint:gosec
 const (

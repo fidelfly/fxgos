@@ -18,3 +18,4 @@
 
 /build/docker/env/mysql/
 /build/macos/
+.idea/

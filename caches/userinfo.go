@@ -3,7 +3,7 @@ package caches
 import (
 	"strconv"
 
-	"github.com/fidelfly/fxgo/cachex"
+	"github.com/fidelfly/fxgo/cachex/mcache"
 	"github.com/fidelfly/fxgo/logx"
 
 	"github.com/fidelfly/fxgos/system"
@@ -25,5 +25,5 @@ func userInfoResolver(key string) interface{} {
 }
 
 func init() {
-	system.UserCache = cachex.CreateEnsureCache(cachex.NoExpiration, 0, userInfoResolver)
+	system.UserCache = mcache.NewEnsureCache(mcache.NoExpiration, 0, userInfoResolver)
 }
