@@ -1,0 +1,9 @@
+Type = "function"
+
+[[Resources]]
+Code = "role"
+Actions = ["access", "create", "update", "delete"]
+
+[[Resources]]
+Code = "users"
+Actions = ["access", "create", "update", "delete"]

@@ -9,6 +9,7 @@ Stdout = true
 WebPath = ""
 Debug = true
 Port = 8080
+TemporaryPath = "./data/temporary"
 
 [Database]
 Host = "127.0.0.1"
@@ -16,6 +17,7 @@ Port = "3306"
 Schema = "fxgosdb"
 User = "fxgos"
 Password = "fxgos@lyismydg"
+
 
 [Oauth2]
     [[Oauth2.Client]]
@@ -26,3 +28,13 @@ Password = "fxgos@lyismydg"
 [TLS]
 CertFile = "../tls/server/server.crt"
 KeyFile = "../tls/server/server.key"
+
+
+[Mail]
+Host = "smtp.163.com"
+Port = 25
+User = "test@163.com"
+Password = "testpwd"
+From = "test@fxgo.com"
+[[Mail.Templates]]
+Source=["./assets/template"]
