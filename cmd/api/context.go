@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/fidelfly/fxgo"
 	"github.com/fidelfly/fxgo/httprxr"
 	"github.com/fidelfly/fxgo/pkg/ctxh"
 
@@ -29,7 +30,7 @@ func GetUserInfo(r *http.Request) *user.CacheInfo {
 }
 
 func GetUserKey(r *http.Request) string {
-	userKey := httprxr.ContextGet(r, mgo.ContextUserKey)
+	userKey := httprxr.ContextGet(r, fxgo.ContextUserKey)
 	if userKey == nil {
 		return ""
 	}
@@ -40,7 +41,7 @@ func GetUserKey(r *http.Request) string {
 }
 
 func GetRequestId(r *http.Request) string {
-	reqId := httprxr.ContextGet(r, mgo.ContextRequestId)
+	reqId := httprxr.ContextGet(r, fxgo.ContextRequestId)
 	if reqId == nil {
 		return ""
 	}

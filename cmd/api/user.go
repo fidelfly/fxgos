@@ -129,9 +129,9 @@ func sendActivateMail(w http.ResponseWriter, r *http.Request) {
 		data := make(map[string]string)
 		data["name"] = userData.Name
 		if len(params["id"]) > 0 {
-			data["activelink"] = system.Runtime.WebUrl + "/sys/activate?otk=" + url.QueryEscape(key)
+			data["activelink"] = system.Runtime.Domain + "/sys/activate?otk=" + url.QueryEscape(key)
 		} else {
-			data["activelink"] = system.Runtime.WebUrl + "/api/user/activate?otk=" + url.QueryEscape(key)
+			data["activelink"] = system.Runtime.Domain + "/api/user/activate?otk=" + url.QueryEscape(key)
 		}
 
 		if err := mail.SendMail(mail.CreateMessage(
@@ -381,7 +381,7 @@ func enableUser(w http.ResponseWriter, r *http.Request) {
 	if key, err := otk.NewOtk("USER_ACTIVE", strconv.FormatInt(userData.Id, 10), 24*time.Hour, "Active User", otk.NewResourceKey(userData.Id)); err == nil {
 		data := make(map[string]string)
 		data["name"] = userData.Name
-		data["activelink"] = system.Runtime.WebUrl + "/sys/activate?otk=" + url.QueryEscape(key)
+		data["activelink"] = system.Runtime.Domain + "/sys/activate?otk=" + url.QueryEscape(key)
 		logx.CaptureError(mail.SendMail(mail.CreateMessage(
 			mail.TemplateMessage("", "activemail.tpl", data),
 			mail.Subject("Activate your account"),
@@ -423,9 +423,9 @@ func activateEmail(w http.ResponseWriter, r *http.Request) {
 		data := make(map[string]string)
 		data["name"] = userData.Name
 		if len(params["id"]) > 0 {
-			data["activelink"] = system.Runtime.WebUrl + "/sys/activate?otk=" + url.QueryEscape(key)
+			data["activelink"] = system.Runtime.Domain + "/sys/activate?otk=" + url.QueryEscape(key)
 		} else {
-			data["activelink"] = system.Runtime.WebUrl + "/api/user/activate?otk=" + url.QueryEscape(key)
+			data["activelink"] = system.Runtime.Domain + "/api/user/activate?otk=" + url.QueryEscape(key)
 		}
 		if err := mail.SendMail(mail.CreateMessage(
 			mail.TemplateMessage("", "activemail.tpl", data),
@@ -589,7 +589,7 @@ func postUser(w http.ResponseWriter, r *http.Request) {
 	if key, err := otk.NewOtk("USER_ACTIVE", strconv.FormatInt(userData.Id, 10), 24*time.Hour, "Active User", otk.NewResourceKey(userData.Id)); err == nil {
 		data := make(map[string]string)
 		data["name"] = userData.Name
-		data["activelink"] = system.Runtime.WebUrl + "/sys/activate?otk=" + url.QueryEscape(key)
+		data["activelink"] = system.Runtime.Domain + "/sys/activate?otk=" + url.QueryEscape(key)
 		logx.CaptureError(mail.SendMail(mail.CreateMessage(
 			mail.TemplateMessage("", "activemail.tpl", data),
 			mail.Subject("Activate your account"),

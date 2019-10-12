@@ -15,6 +15,7 @@ import (
 	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/pkg/mail"
 	"github.com/fidelfly/fxgos/cmd/router"
+	"github.com/fidelfly/fxgos/cmd/service/audit"
 	"github.com/fidelfly/fxgos/cmd/service/filedb"
 	"github.com/fidelfly/fxgos/cmd/service/iam"
 	"github.com/fidelfly/fxgos/cmd/service/otk"
@@ -146,6 +147,12 @@ func initFunction() (err error) {
 		return
 	}
 	logx.Info("One-Time-Token function is initialized.")
+
+	//init audit
+	err = audit.Initialize()
+	if err != nil {
+		return
+	}
 
 	//init user
 	err = user.Initialize()
