@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/fidelfly/fxgo/logx"
 )
 
 //todo remove
@@ -38,7 +40,9 @@ func CreateTemporaryFile(data []byte, file string) (path string, err error) {
 	if err != nil {
 		return
 	}
-	defer tempFile.Close()
+	defer func() {
+		logx.CaptureError(tempFile.Close())
+	}()
 
 	_, err = tempFile.Write(data)
 	if err != nil {

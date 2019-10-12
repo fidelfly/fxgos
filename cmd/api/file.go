@@ -8,6 +8,7 @@ import (
 
 	"github.com/fidelfly/fxgo/authx"
 	"github.com/fidelfly/fxgo/httprxr"
+	"github.com/fidelfly/fxgo/logx"
 	"github.com/fidelfly/fxgo/routex"
 
 	"github.com/fidelfly/fxgos/cmd/service/filedb"
@@ -57,7 +58,9 @@ func postFile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	defer mf.Close()
+	defer func() {
+		logx.CaptureError(mf.Close())
+	}()
 	data, err := ioutil.ReadAll(mf)
 	if err != nil {
 		return

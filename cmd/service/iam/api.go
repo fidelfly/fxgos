@@ -105,9 +105,9 @@ func ListResource(ctx context.Context, resourceType string) []*Resource {
 	resList := make([]*Resource, 0)
 	_ = resDB.GetDB().Update(func(tx *buntdb.Tx) error {
 		_ = tx.AscendEqual("type", fmt.Sprintf(`{"type":"%s"}`, resourceType), func(key, value string) bool {
-			res := &Resource{}
-			if err := json.Unmarshal([]byte(value), res); err == nil {
-				resList = append(resList, res)
+			iamRes := &Resource{}
+			if err := json.Unmarshal([]byte(value), iamRes); err == nil {
+				resList = append(resList, iamRes)
 			}
 			return true
 		})
@@ -132,19 +132,19 @@ func queryBySubject(ctx context.Context, sub string, resourceType string) []*Acc
 	}
 	var obj, act string
 	items := make([]*AccessItem, 0)
-	for _, res := range resources {
-		obj = iamx.EncodeObject(res.Type, res.Code)
-		if len(res.Actions) > 0 {
+	for _, iamRes := range resources {
+		obj = iamx.EncodeObject(iamRes.Type, iamRes.Code)
+		if len(iamRes.Actions) > 0 {
 			policyAction := make([]string, 0)
-			for _, act = range res.Actions {
-				if model.Validate(res.Type, sub, obj, act) {
+			for _, act = range iamRes.Actions {
+				if model.Validate(iamRes.Type, sub, obj, act) {
 					policyAction = append(policyAction, act)
 				}
 			}
 			if len(policyAction) > 0 {
 				items = append(items, &AccessItem{
-					Type:    res.Type,
-					Code:    res.Code,
+					Type:    iamRes.Type,
+					Code:    iamRes.Code,
 					Actions: policyAction,
 				})
 			}
@@ -161,16 +161,16 @@ func listResourceAcl(ctx context.Context, sub string, resourceType string) []*Re
 
 	var obj, act string
 	items := make([]*ResourceACL, 0)
-	for _, res := range resources {
+	for _, iamRes := range resources {
 		item := &ResourceACL{
-			Resource: *res,
+			Resource: *iamRes,
 		}
 		policyAction := make([]string, 0)
 		if len(sub) > 0 {
-			obj = iamx.EncodeObject(res.Type, res.Code)
-			if len(res.Actions) > 0 {
-				for _, act = range res.Actions {
-					if model.Validate(res.Type, sub, obj, act) {
+			obj = iamx.EncodeObject(iamRes.Type, iamRes.Code)
+			if len(iamRes.Actions) > 0 {
+				for _, act = range iamRes.Actions {
+					if model.Validate(iamRes.Type, sub, obj, act) {
 						policyAction = append(policyAction, act)
 					}
 				}

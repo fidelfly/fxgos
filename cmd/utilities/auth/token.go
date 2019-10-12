@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/fidelfly/fxgo"
 	"github.com/fidelfly/fxgo/authx"
+	"github.com/fidelfly/fxgo/gosrvx"
 
 	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/user/res"
 )
 
-var TokenIssuer *fxgo.TokenIssuer
+var TokenIssuer *gosrvx.TokenIssuer
 
 func setupAuthServer(clients ...authx.AuthClient) (server *authx.Server, err error) {
 	tokenStore, err := authx.NewFileTokenStore("./token")
@@ -33,12 +33,12 @@ func setupAuthServer(clients ...authx.AuthClient) (server *authx.Server, err err
 	return
 }
 
-func SetupTokenIssuer(tokenPath string, clients ...authx.AuthClient) (*fxgo.TokenIssuer, error) {
+func SetupTokenIssuer(tokenPath string, clients ...authx.AuthClient) (*gosrvx.TokenIssuer, error) {
 	server, err := setupAuthServer(clients...)
 	if err != nil {
 		return nil, err
 	}
-	TokenIssuer = fxgo.NewTokenIssuer(server, tokenPath)
+	TokenIssuer = gosrvx.NewTokenIssuer(server, tokenPath)
 	return TokenIssuer, nil
 }
 

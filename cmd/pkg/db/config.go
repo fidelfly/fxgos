@@ -25,13 +25,13 @@ func (db Server) getTarget() string {
 	return fmt.Sprintf("%s:%d", db.Host, db.Port)
 }
 
-type DbLoger struct {
+type Logger struct {
 	*logx.Logger
 	level   xormc.LogLevel
 	showSql bool
 }
 
-func (dl *DbLoger) ShowSQL(show ...bool) {
+func (dl *Logger) ShowSQL(show ...bool) {
 	if len(show) > 0 {
 		dl.showSql = show[0]
 	} else {
@@ -39,14 +39,14 @@ func (dl *DbLoger) ShowSQL(show ...bool) {
 	}
 }
 
-func (dl *DbLoger) IsShowSQL() bool {
+func (dl *Logger) IsShowSQL() bool {
 	return dl.showSql
 }
 
-func (dl *DbLoger) Level() xormc.LogLevel {
+func (dl *Logger) Level() xormc.LogLevel {
 	return dl.level
 }
-func (dl *DbLoger) SetLevel(l xormc.LogLevel) {
+func (dl *Logger) SetLevel(l xormc.LogLevel) {
 	dl.level = l
 	switch dl.level {
 	case xormc.LOG_DEBUG:

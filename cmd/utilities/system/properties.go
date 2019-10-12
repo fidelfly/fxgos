@@ -3,8 +3,8 @@ package system
 import (
 	"os"
 
-	"github.com/fidelfly/fxgo"
 	"github.com/fidelfly/fxgo/authx"
+	"github.com/fidelfly/fxgo/gosrvx"
 
 	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/pkg/mail"
@@ -42,7 +42,7 @@ type Properties struct {
 }
 
 type RuntimeProperties struct {
-	fxgo.LogConfig
+	gosrvx.LogConfig
 	AssetPath     string
 	WebPath       string
 	Debug         bool
@@ -53,7 +53,7 @@ type RuntimeProperties struct {
 
 type DatabaseProperties struct {
 	db.Server
-	fxgo.LogConfig
+	gosrvx.LogConfig
 }
 
 type OAuth2Properties struct {

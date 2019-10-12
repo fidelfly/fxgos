@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/fidelfly/fxgo"
+	"github.com/fidelfly/fxgo/gosrvx"
 	"github.com/fidelfly/fxgo/httprxr"
 	"github.com/fidelfly/fxgo/logx"
 	"github.com/fidelfly/fxgo/routex"
@@ -15,7 +15,7 @@ import (
 	"github.com/fidelfly/fxgos/cmd/utilities/system"
 )
 
-func setupRoute(rr *fxgo.RootRouter) {
+func setupRoute(rr *gosrvx.RootRouter) {
 	setupAPI(rr.PathPrefix("/api").Subrouter())
 }
 
@@ -29,9 +29,9 @@ func setupAPI(router *routex.Router) {
 	)
 }
 
-var rr *fxgo.RootRouter
+var rr *gosrvx.RootRouter
 
-func GetRootRouter() *fxgo.RootRouter {
+func GetRootRouter() *gosrvx.RootRouter {
 	return rr
 }
 
@@ -40,7 +40,7 @@ func Initialize() (err error) {
 	if err != nil {
 		return
 	}
-	rr = fxgo.NewRouter()
+	rr = gosrvx.NewRouter()
 
 	rr.EnableAudit(logx.StandardLogger())
 	rr.EnableRecover()

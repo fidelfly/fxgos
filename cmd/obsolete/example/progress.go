@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fidelfly/fxgo"
+	"github.com/fidelfly/fxgo/gosrvx"
 	"github.com/fidelfly/fxgo/httprxr"
 )
 
@@ -15,7 +15,7 @@ type ProgressExample struct {
 
 func (pe *ProgressExample) ServiceProgress(w http.ResponseWriter, r *http.Request) {
 	params := httprxr.GetRequestVars(r, "progressKey")
-	progress := fxgo.GetProgress(params["progressKey"], "progressDemo")
+	progress := gosrvx.GetProgress(params["progressKey"], "progressDemo")
 
 	for i := 1; i <= 20; i++ {
 		progress.Active(i, fmt.Sprintf("Main Progress %d%%", i))
@@ -65,5 +65,5 @@ func goProgress(code string, step int, duration time.Duration, progressSubscribe
 
 func init() {
 	pe := &ProgressExample{}
-	fxgo.Router().Path("/example/progress").HandlerFunc(pe.ServiceProgress)
+	gosrvx.Router().Path("/example/progress").HandlerFunc(pe.ServiceProgress)
 }

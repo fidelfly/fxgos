@@ -5,7 +5,9 @@ import (
 	"flag"
 	"time"
 
-	"github.com/fidelfly/fxgo"
+	"github.com/fidelfly/fxgo/gosrvx"
+
+	// "github.com/fidelfly/fxgo/gosrvx"
 	"github.com/fidelfly/fxgo/confx"
 	"github.com/fidelfly/fxgo/logx"
 	"github.com/fidelfly/fxgo/pkg/filex"
@@ -44,7 +46,7 @@ func StartService() (err error) {
 		}
 	}()
 
-	//Parse Config File
+	// Parse Config File
 	err = parseConfig()
 	if err != nil {
 		return
@@ -57,7 +59,7 @@ func StartService() (err error) {
 		return
 	}
 	logx.Info("Log is setup.")
-	//init runtime
+	// init runtime
 	err = initRuntime()
 	if err != nil {
 		return
@@ -70,12 +72,12 @@ func StartService() (err error) {
 	}
 	logx.Info("Database is connected.")
 
-	//init function
+	// init function
 	err = initFunction()
 	if err != nil {
 		return
 	}
-	//init data
+	// init data
 	err = initData()
 	if err != nil {
 		return
@@ -83,16 +85,16 @@ func StartService() (err error) {
 
 	// start Server
 	if system.SupportTLS() {
-		fxgo.ListenAndServeTLS(system.TLS.CertFile, system.TLS.KeyFile, router.GetRootRouter(), system.Runtime.Port)
+		gosrvx.ListenAndServeTLS(system.TLS.CertFile, system.TLS.KeyFile, router.GetRootRouter(), system.Runtime.Port)
 	} else {
-		fxgo.ListenAndServe(router.GetRootRouter(), system.Runtime.Port)
+		gosrvx.ListenAndServe(router.GetRootRouter(), system.Runtime.Port)
 	}
 
 	return nil
 }
 
 func parseConfig() error {
-	//return  fxgo.InitTomlConfig("config.toml", &system.Configuration)
+	//return  gosrvx.InitTomlConfig("config.toml", &system.Configuration)
 	var configFile = ""
 	flag.StringVar(&configFile, "config", defConfigFile, "Set Config File")
 	flag.Parse()
@@ -101,8 +103,8 @@ func parseConfig() error {
 }
 
 func setupLog() error {
-	fxgo.SetupLogs(&system.Runtime.LogConfig)
-	dbLoger = fxgo.NewLog(&system.Database.LogConfig)
+	gosrvx.SetupLogs(&system.Runtime.LogConfig)
+	dbLoger = gosrvx.NewLog(&system.Database.LogConfig)
 	return nil
 }
 
@@ -113,7 +115,7 @@ func initDatabase() error {
 		engine.ShowSQL(true)
 		engine.SetConnMaxLifetime(3595 * time.Second)
 		if dbLoger != nil {
-			engine.SetLogger(&db.DbLoger{Logger: dbLoger})
+			engine.SetLogger(&db.Logger{Logger: dbLoger})
 		}
 		engine.SetLogLevel(db.GetLogLevel(system.Database.LogLevel))
 	})

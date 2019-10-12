@@ -5,11 +5,11 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/fidelfly/fxgo"
+	"github.com/fidelfly/fxgo/gosrvx"
 )
 
 func GetUserId(ctx context.Context) int64 {
-	userKey := ctx.Value(fxgo.ContextUserKey)
+	userKey := ctx.Value(gosrvx.ContextUserKey)
 	if userKey == nil {
 		return 0
 	}
