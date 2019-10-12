@@ -100,8 +100,8 @@ func (m *BooleanValue) GetValue() bool {
 }
 
 func init() {
-	proto.RegisterType((*StringValue)(nil), "m18rpc.base.StringValue")
-	proto.RegisterType((*BooleanValue)(nil), "m18rpc.base.BooleanValue")
+	proto.RegisterType((*StringValue)(nil), "grpcx.base.StringValue")
+	proto.RegisterType((*BooleanValue)(nil), "grpcx.base.BooleanValue")
 }
 
 func init() { proto.RegisterFile("base.proto", fileDescriptor_db1b6b0986796150) }

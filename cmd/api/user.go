@@ -207,10 +207,10 @@ func resetPwdEmail(w http.ResponseWriter, r *http.Request) {
 	if key, err := otk.NewOtk("USER_RESETPWD", strconv.FormatInt(userData.Id, 10), 24*time.Hour, "Reset Password", otk.NewResourceKey(userData.Id)); err == nil {
 		data := make(map[string]string)
 		data["name"] = userData.Name
-		data["resetPwdLink"] = system.Runtime.WebUrl + "/resetPwd?otk=" + url.QueryEscape(key)
+		data["resetPwdLink"] = system.Runtime.Domain + "/resetPwd?otk=" + url.QueryEscape(key)
 		if err := mail.SendMail(mail.CreateMessage(
 			mail.TemplateMessage("", "resetPwdMail.tpl", data),
-			mail.Subject("[M18 SaaS] Please reset your password"),
+			mail.Subject("[fxgos] Please reset your password"),
 			mail.To(userData.Email))); err != nil {
 			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 		}

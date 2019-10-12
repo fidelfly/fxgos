@@ -48,6 +48,7 @@ type RuntimeProperties struct {
 	Debug         bool
 	Port          int64
 	TemporaryPath string
+	Domain        string
 }
 
 type DatabaseProperties struct {
