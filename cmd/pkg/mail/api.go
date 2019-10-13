@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/fidelfly/gox/logx"
+	"gopkg.in/gomail.v2"
 )
 
 type MessageDecorator func(message *gomail.Message)
