@@ -6,11 +6,11 @@ import (
 
 	"github.com/fidelfly/gox/pkg/strh"
 
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/user/res"
 	"github.com/fidelfly/fxgos/cmd/utilities/auth"
 	"github.com/fidelfly/fxgos/cmd/utilities/pub"
 	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
+	"github.com/fidelfly/gostool/db"
 )
 
 func New() *res.User {

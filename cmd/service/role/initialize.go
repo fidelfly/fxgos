@@ -1,9 +1,9 @@
 package role
 
 import (
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/role/res"
 	"github.com/fidelfly/fxgos/cmd/utilities/pub"
+	"github.com/fidelfly/gostool/db"
 )
 
 func Initialize() error {

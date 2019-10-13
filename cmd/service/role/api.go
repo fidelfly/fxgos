@@ -6,12 +6,12 @@ import (
 
 	"github.com/fidelfly/gox/errorx"
 
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/role/res"
 	res2 "github.com/fidelfly/fxgos/cmd/service/user/res"
 	"github.com/fidelfly/fxgos/cmd/utilities/mctx"
 	"github.com/fidelfly/fxgos/cmd/utilities/pub"
 	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
+	"github.com/fidelfly/gostool/db"
 )
 
 func Create(ctx context.Context, resRole *res.Role) (int64, error) {

@@ -9,11 +9,11 @@ import (
 	"github.com/fidelfly/gox/logx"
 	"github.com/tidwall/buntdb"
 
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/iam/iamx"
 	"github.com/fidelfly/fxgos/cmd/service/iam/model"
 	"github.com/fidelfly/fxgos/cmd/service/iam/res"
 	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
+	"github.com/fidelfly/gostool/db"
 )
 
 //export

@@ -9,9 +9,9 @@ import (
 	"github.com/fidelfly/gox/pkg/jmap"
 	"github.com/fidelfly/gox/routex"
 
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/iam"
 	"github.com/fidelfly/fxgos/cmd/service/user"
+	"github.com/fidelfly/gostool/db"
 )
 
 const Token = "/api/token"

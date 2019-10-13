@@ -3,8 +3,8 @@ package audit
 import (
 	"context"
 
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/audit/res"
+	"github.com/fidelfly/gostool/db"
 )
 
 func ListTrail(ctx context.Context, input db.ListInfo) ([]*res.Systrail, int64, error) {

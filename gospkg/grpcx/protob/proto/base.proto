@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package grpcx.base;
 
-option go_package="github.com/fidelfly/fxgos/pkg/grpcx/protob";
+option go_package="github.com/fidelfly/gostool/grpcx/protob";
 
 message StringValue {
 	string value = 1;

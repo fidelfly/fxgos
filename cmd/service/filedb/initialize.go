@@ -1,8 +1,8 @@
 package filedb
 
 import (
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/filedb/res"
+	"github.com/fidelfly/gostool/db"
 )
 
 func Initialize() error {

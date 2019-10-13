@@ -11,8 +11,8 @@ import (
 	"github.com/fidelfly/gox/logx"
 	"github.com/fidelfly/gox/pkg/randx"
 
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/audit/res"
+	"github.com/fidelfly/gostool/db"
 )
 
 //Task Menu

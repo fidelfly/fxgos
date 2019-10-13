@@ -8,9 +8,9 @@ import (
 	"github.com/casbin/casbin/model"
 	"github.com/casbin/casbin/persist"
 
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/iam/iamx"
 	"github.com/fidelfly/fxgos/cmd/service/iam/res"
+	"github.com/fidelfly/gostool/db"
 )
 
 /*LoadPolicy(model model.Model) error

@@ -14,8 +14,6 @@ import (
 	"github.com/go-xorm/xorm"
 
 	_ "github.com/fidelfly/fxgos/cmd/obsolete/caches"
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
-	"github.com/fidelfly/fxgos/cmd/pkg/mail"
 	"github.com/fidelfly/fxgos/cmd/router"
 	"github.com/fidelfly/fxgos/cmd/service/audit"
 	"github.com/fidelfly/fxgos/cmd/service/filedb"
@@ -26,6 +24,8 @@ import (
 	"github.com/fidelfly/fxgos/cmd/service/user/res"
 	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
 	"github.com/fidelfly/fxgos/cmd/utilities/system"
+	"github.com/fidelfly/gostool/db"
+	"github.com/fidelfly/gostool/mail"
 )
 
 const defConfigFile = "config.toml"

@@ -11,8 +11,8 @@ import (
 	"github.com/fidelfly/gox/logx"
 	"github.com/fidelfly/gox/pkg/filex"
 
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/iam/res"
+	"github.com/fidelfly/gostool/db"
 )
 
 type Resource struct {

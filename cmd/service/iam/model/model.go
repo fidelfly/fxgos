@@ -7,8 +7,8 @@ import (
 	"github.com/casbin/casbin/model"
 	"github.com/fidelfly/gox/logx"
 
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/iam/res"
+	"github.com/fidelfly/gostool/db"
 )
 
 var enforcerCache sync.Map // map[string]*casbin.Enforcer

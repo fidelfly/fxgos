@@ -2,13 +2,14 @@ Version = "0.1.0"
 
 [Runtime]
 LogLevel = "info" #warning
-LogPath = "./output/logs"
+LogPath = "./logs"
 LogFile = "fxgos.log"
 MaxSize = 1
 Stdout = true
 WebPath = ""
 Debug = true
 Port = 8080
+AssetPath = "./assets"
 TemporaryPath = "./data/temporary"
 
 [Database]

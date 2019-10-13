@@ -9,8 +9,8 @@ import (
 	"github.com/fidelfly/gox/authx"
 	"github.com/fidelfly/gox/gosrvx"
 
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/user/res"
+	"github.com/fidelfly/gostool/db"
 )
 
 var TokenIssuer *gosrvx.TokenIssuer

@@ -6,9 +6,9 @@ import (
 
 	"github.com/fidelfly/gox/pkg/filex"
 
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/filedb/res"
 	"github.com/fidelfly/fxgos/cmd/utilities/mctx"
+	"github.com/fidelfly/gostool/db"
 )
 
 func Save(ctx context.Context, name string, data []byte) (int64, error) {

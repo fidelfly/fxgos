@@ -3,9 +3,9 @@ package model
 import (
 	"github.com/casbin/casbin"
 
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/iam/iamx"
 	"github.com/fidelfly/fxgos/cmd/service/iam/res"
+	"github.com/fidelfly/gostool/db"
 )
 
 func Validate(resType, sub, obj, act string) bool {

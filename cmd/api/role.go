@@ -7,12 +7,12 @@ import (
 	"github.com/fidelfly/gox/httprxr"
 	"github.com/fidelfly/gox/routex"
 
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/iam"
 	"github.com/fidelfly/fxgos/cmd/service/iam/iamx"
 	"github.com/fidelfly/fxgos/cmd/service/role"
 	"github.com/fidelfly/fxgos/cmd/service/role/res"
 	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
+	"github.com/fidelfly/gostool/db"
 )
 
 func RoleRoute(router *routex.Router) {

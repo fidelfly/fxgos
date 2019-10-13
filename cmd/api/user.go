@@ -12,8 +12,6 @@ import (
 	"github.com/fidelfly/gox/logx"
 	"github.com/fidelfly/gox/routex"
 
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
-	"github.com/fidelfly/fxgos/cmd/pkg/mail"
 	"github.com/fidelfly/fxgos/cmd/service/iam"
 	"github.com/fidelfly/fxgos/cmd/service/iam/iamx"
 	"github.com/fidelfly/fxgos/cmd/service/otk"
@@ -22,6 +20,8 @@ import (
 	"github.com/fidelfly/fxgos/cmd/utilities/auth"
 	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
 	"github.com/fidelfly/fxgos/cmd/utilities/system"
+	"github.com/fidelfly/gostool/db"
+	"github.com/fidelfly/gostool/mail"
 )
 
 func UserRoute(router *routex.Router) {

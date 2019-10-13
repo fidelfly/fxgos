@@ -6,8 +6,8 @@ import (
 	"github.com/fidelfly/gox/authx"
 	"github.com/fidelfly/gox/gosrvx"
 
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
-	"github.com/fidelfly/fxgos/cmd/pkg/mail"
+	"github.com/fidelfly/gostool/db"
+	"github.com/fidelfly/gostool/mail"
 )
 
 var Configuration = Properties{}

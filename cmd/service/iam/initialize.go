@@ -6,10 +6,11 @@ import (
 	"github.com/fidelfly/gox/cachex"
 	"github.com/fidelfly/gox/logx"
 
-	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/iam/res"
 	"github.com/fidelfly/fxgos/cmd/service/user"
 	"github.com/fidelfly/fxgos/cmd/utilities/pub"
+	"github.com/fidelfly/fxgos/cmd/utilities/system"
+	"github.com/fidelfly/gostool/db"
 )
 
 func Initialize() error {
@@ -18,7 +19,7 @@ func Initialize() error {
 	)
 	pub.Subscribe(pub.TopicResource, subscriber)
 	resDB.CreateJSONIndex("type", "*", "type")
-	ScanIam("./assets/iam")
+	ScanIam(system.GetAssetPath("iam"))
 	return err
 }
 
