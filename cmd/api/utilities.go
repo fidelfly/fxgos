@@ -54,8 +54,10 @@ func NewListInfo(params map[string]string, cond ...string) db.ListInfo {
 	return req
 }
 
-func AttachAccessPremises(route *routex.Route, premises ...iam.AccessItem) {
-	route.SetProps(AccessConfigKey, iam.AccessPremise(premises))
+func iamProps(premises ...iam.AccessItem) routex.PropSetter {
+	return func(props *routex.RouteProps) {
+		_ = props.Set(AccessConfigKey, iam.AccessPremise(premises))
+	}
 }
 
 func GetPath(r *http.Request) []string {

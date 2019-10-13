@@ -40,17 +40,17 @@ func UserRoute(router *routex.Router) {
 	rr.Methods(http.MethodPost).Path("/resetPwdEmail").HandlerFunc(resetPwdEmail).Restricted(false)
 	rr.Methods(http.MethodPost).Path("/resetPwd").HandlerFunc(resetPwd).Restricted(false)
 
-	AttachAccessPremises(rr.Methods(http.MethodGet).Path("/list").HandlerFunc(listUser), accessRight)
-	AttachAccessPremises(rr.Methods(http.MethodPost).Path("/disable/{id}").HandlerFunc(disableUser), updateRight)
-	AttachAccessPremises(rr.Methods(http.MethodPost).Path("/enable/{id}").HandlerFunc(enableUser), updateRight)
-	AttachAccessPremises(rr.Methods(http.MethodPost).Path("/activateEmail/{id}").HandlerFunc(activateEmail), updateRight)
+	rr.Methods(http.MethodGet).Path("/list").HandlerFunc(listUser).ApplyProps(iamProps(accessRight))
+	rr.Methods(http.MethodPost).Path("/disable/{id}").HandlerFunc(disableUser).ApplyProps(iamProps(updateRight))
+	rr.Methods(http.MethodPost).Path("/enable/{id}").HandlerFunc(enableUser).ApplyProps(iamProps(updateRight))
+	rr.Methods(http.MethodPost).Path("/activateEmail/{id}").HandlerFunc(activateEmail).ApplyProps(iamProps(updateRight))
 	rr.Methods(http.MethodGet).Path("/{id}").HandlerFunc(getUser)
 	rr.Methods(http.MethodGet).Path("/acl/{id}").HandlerFunc(listUserAcl)
 	rr.Methods(http.MethodGet).Path("/acl").HandlerFunc(listUserAcl)
 	rr.Methods(http.MethodGet).HandlerFunc(getUser)
 	rr.Methods(http.MethodPut).HandlerFunc(putUser)
-	AttachAccessPremises(rr.Methods(http.MethodPost).HandlerFunc(postUser), createRight)
-	AttachAccessPremises(rr.Methods(http.MethodDelete).Path("/{id}").HandlerFunc(deleteUser), deleteRight)
+	rr.Methods(http.MethodPost).HandlerFunc(postUser).ApplyProps(iamProps(createRight))
+	rr.Methods(http.MethodDelete).Path("/{id}").HandlerFunc(deleteUser).ApplyProps(iamProps(deleteRight))
 
 	router.Path("/logout").HandlerFunc(auth.TokenIssuer.AuthorizeDisposeHandlerFunc).Restricted(true)
 }
