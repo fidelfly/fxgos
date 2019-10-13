@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/fidelfly/fxgo/authx"
-	"github.com/fidelfly/fxgo/httprxr"
-	"github.com/fidelfly/fxgo/logx"
-	"github.com/fidelfly/fxgo/routex"
+	"github.com/fidelfly/gox/authx"
+	"github.com/fidelfly/gox/httprxr"
+	"github.com/fidelfly/gox/logx"
+	"github.com/fidelfly/gox/routex"
 
 	"github.com/fidelfly/fxgos/cmd/service/filedb"
 )

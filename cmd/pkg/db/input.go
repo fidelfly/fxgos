@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/fidelfly/fxgo/errorx"
+	"github.com/fidelfly/gox/errorx"
 )
 
 type UpdateInfo struct {

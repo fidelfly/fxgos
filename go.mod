@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/casbin/casbin v1.9.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/fidelfly/fxgo v0.0.0
+	github.com/fidelfly/gox v0.0.0
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/go-xorm/xorm v0.7.6
 	github.com/golang/protobuf v1.3.1
@@ -19,4 +19,4 @@ require (
 	xorm.io/core v0.7.2
 )
 
-replace github.com/fidelfly/fxgo => ../fxgo
+replace github.com/fidelfly/gox => ../gox

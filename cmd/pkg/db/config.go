@@ -6,7 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	xormc "xorm.io/core"
 
-	"github.com/fidelfly/fxgo/logx"
+	"github.com/fidelfly/gox/logx"
 )
 
 type Server struct {

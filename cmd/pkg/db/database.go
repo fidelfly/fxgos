@@ -4,7 +4,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
 
-	"github.com/fidelfly/fxgo/logx"
+	"github.com/fidelfly/gox/logx"
 )
 
 //export

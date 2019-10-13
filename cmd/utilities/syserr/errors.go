@@ -1,6 +1,6 @@
 package syserr
 
-import "github.com/fidelfly/fxgo/errorx"
+import "github.com/fidelfly/gox/errorx"
 
 var (
 	ErrNotFound     = errorx.NewError("err.db.not_exist", "data is not found in db")

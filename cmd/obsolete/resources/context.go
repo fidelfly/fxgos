@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/fidelfly/fxgo/httprxr"
-	"github.com/fidelfly/fxgo/lockx"
+	"github.com/fidelfly/gox/httprxr"
+	"github.com/fidelfly/gox/lockx"
 
 	"github.com/fidelfly/fxgos/cmd/obsolete/caches"
 	"github.com/fidelfly/fxgos/cmd/utilities/system"

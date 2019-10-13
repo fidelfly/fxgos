@@ -1,6 +1,6 @@
 package pub
 
-import "github.com/fidelfly/fxgo/pubsubx"
+import "github.com/fidelfly/gox/pubsubx"
 
 var myPubSub = pubsubx.New(3)
 

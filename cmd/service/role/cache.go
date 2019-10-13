@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/fidelfly/fxgo/cachex/mcache"
+	"github.com/fidelfly/gox/cachex/mcache"
 
 	"github.com/fidelfly/fxgos/cmd/utilities/pub"
 )

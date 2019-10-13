@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/fidelfly/fxgo/errorx"
+	"github.com/fidelfly/gox/errorx"
 
 	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/role/res"

@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/fidelfly/fxgo/logx"
+	"github.com/fidelfly/gox/logx"
 )
 
 //todo remove

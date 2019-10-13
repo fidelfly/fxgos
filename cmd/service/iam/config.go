@@ -7,9 +7,9 @@ import (
 	"regexp"
 
 	"github.com/BurntSushi/toml"
-	"github.com/fidelfly/fxgo/cachex/bcache"
-	"github.com/fidelfly/fxgo/logx"
-	"github.com/fidelfly/fxgo/pkg/filex"
+	"github.com/fidelfly/gox/cachex/bcache"
+	"github.com/fidelfly/gox/logx"
+	"github.com/fidelfly/gox/pkg/filex"
 
 	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/iam/res"

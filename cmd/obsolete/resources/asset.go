@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/fidelfly/fxgo/httprxr"
-	"github.com/fidelfly/fxgo/logx"
-	"github.com/fidelfly/fxgo/pkg/filex"
+	"github.com/fidelfly/gox/httprxr"
+	"github.com/fidelfly/gox/logx"
+	"github.com/fidelfly/gox/pkg/filex"
 
 	"github.com/fidelfly/fxgos/cmd/utilities/system"
 )

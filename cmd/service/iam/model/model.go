@@ -5,7 +5,7 @@ import (
 
 	"github.com/casbin/casbin"
 	"github.com/casbin/casbin/model"
-	"github.com/fidelfly/fxgo/logx"
+	"github.com/fidelfly/gox/logx"
 
 	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/iam/res"

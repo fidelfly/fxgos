@@ -5,12 +5,12 @@ import (
 	"flag"
 	"time"
 
-	"github.com/fidelfly/fxgo/gosrvx"
+	"github.com/fidelfly/gox/gosrvx"
 
-	// "github.com/fidelfly/fxgo/gosrvx"
-	"github.com/fidelfly/fxgo/confx"
-	"github.com/fidelfly/fxgo/logx"
-	"github.com/fidelfly/fxgo/pkg/filex"
+	// "github.com/fidelfly/gox/gosrvx"
+	"github.com/fidelfly/gox/confx"
+	"github.com/fidelfly/gox/logx"
+	"github.com/fidelfly/gox/pkg/filex"
 	"github.com/go-xorm/xorm"
 
 	_ "github.com/fidelfly/fxgos/cmd/obsolete/caches"

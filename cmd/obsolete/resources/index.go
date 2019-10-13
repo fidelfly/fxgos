@@ -1,7 +1,7 @@
 package resources
 
 import (
-	"github.com/fidelfly/fxgo/gosrvx"
+	"github.com/fidelfly/gox/gosrvx"
 
 	"github.com/fidelfly/fxgos/cmd/utilities/system"
 )

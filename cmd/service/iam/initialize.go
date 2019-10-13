@@ -3,8 +3,8 @@ package iam
 import (
 	"context"
 
-	"github.com/fidelfly/fxgo/cachex"
-	"github.com/fidelfly/fxgo/logx"
+	"github.com/fidelfly/gox/cachex"
+	"github.com/fidelfly/gox/logx"
 
 	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/iam/res"

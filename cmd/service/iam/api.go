@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/fidelfly/fxgo/logx"
+	"github.com/fidelfly/gox/logx"
 	"github.com/tidwall/buntdb"
 
 	"github.com/fidelfly/fxgos/cmd/pkg/db"

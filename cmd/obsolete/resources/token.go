@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fidelfly/fxgo/httprxr"
-	"github.com/fidelfly/fxgo/logx"
+	"github.com/fidelfly/gox/httprxr"
+	"github.com/fidelfly/gox/logx"
 )
 
 func logout(w http.ResponseWriter, r *http.Request) {

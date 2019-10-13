@@ -5,11 +5,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fidelfly/fxgo"
-	"github.com/fidelfly/fxgo/cachex/mcache"
-	"github.com/fidelfly/fxgo/httprxr"
-	"github.com/fidelfly/fxgo/logx"
-	"github.com/fidelfly/fxgo/pkg/randx"
+	"github.com/fidelfly/gox"
+	"github.com/fidelfly/gox/cachex/mcache"
+	"github.com/fidelfly/gox/httprxr"
+	"github.com/fidelfly/gox/logx"
+	"github.com/fidelfly/gox/pkg/randx"
 
 	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/audit/res"
@@ -149,7 +149,7 @@ func (task *Task) LogTrailDone(arg interface{}) {
 
 func (task *Task) LogTask() {
 	go func() {
-		defer fxgo.CapturePanicAndRecover("Log Task")
+		defer gox.CapturePanicAndRecover("Log Task")
 		_, err := db.Create(task.Systrail)
 		if err != nil {
 			logx.Error(err)

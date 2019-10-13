@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/fidelfly/fxgo/pkg/strh"
+	"github.com/fidelfly/gox/pkg/strh"
 
 	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/user/res"

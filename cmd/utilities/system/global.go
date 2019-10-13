@@ -2,8 +2,8 @@
 package system
 
 import (
-	"github.com/fidelfly/fxgo/cachex/mcache"
-	"github.com/fidelfly/fxgo/gosrvx"
+	"github.com/fidelfly/gox/cachex/mcache"
+	"github.com/fidelfly/gox/gosrvx"
 	"github.com/go-xorm/xorm"
 )
 

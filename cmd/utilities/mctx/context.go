@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/fidelfly/fxgo/gosrvx"
+	"github.com/fidelfly/gox/gosrvx"
 )
 
 func GetUserId(ctx context.Context) int64 {

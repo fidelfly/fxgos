@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/fidelfly/fxgo/authx"
-	"github.com/fidelfly/fxgo/gosrvx"
+	"github.com/fidelfly/gox/authx"
+	"github.com/fidelfly/gox/gosrvx"
 
 	"github.com/fidelfly/fxgos/cmd/pkg/db"
 	"github.com/fidelfly/fxgos/cmd/service/user/res"

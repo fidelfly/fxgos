@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/fidelfly/fxgo/gosrvx"
-	"github.com/fidelfly/fxgo/httprxr"
-	"github.com/fidelfly/fxgo/pkg/ctxh"
-	"github.com/fidelfly/fxgo/progx"
+	"github.com/fidelfly/gox/gosrvx"
+	"github.com/fidelfly/gox/httprxr"
+	"github.com/fidelfly/gox/pkg/ctxh"
+	"github.com/fidelfly/gox/progx"
 
 	"github.com/fidelfly/fxgos/cmd/service/user"
 )

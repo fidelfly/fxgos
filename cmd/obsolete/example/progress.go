@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fidelfly/fxgo/gosrvx"
-	"github.com/fidelfly/fxgo/httprxr"
-	"github.com/fidelfly/fxgo/progx"
+	"github.com/fidelfly/gox/gosrvx"
+	"github.com/fidelfly/gox/httprxr"
+	"github.com/fidelfly/gox/progx"
 )
 
 type ProgressExample struct {
