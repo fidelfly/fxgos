@@ -7,6 +7,7 @@ import (
 	"github.com/fidelfly/fxgo/httprxr"
 	"github.com/fidelfly/fxgo/logx"
 	"github.com/fidelfly/fxgo/pkg/randx"
+	"github.com/fidelfly/fxgo/progx"
 	"github.com/fidelfly/fxgo/routex"
 )
 
@@ -40,9 +41,12 @@ func setup(w http.ResponseWriter, r *http.Request) {
 
 var SocketCache = mcache.NewCache(0, 0)
 
-func getProgress(key string, code string) *httprxr.WsProgress {
+func getProgress(key string, code string) *progx.Progress {
 	if conn, ok := SocketCache.Get(key); ok {
-		return httprxr.NewWsProgress(conn.(*httprxr.WsConnect), code)
+		if wsconn, ok := conn.(*httprxr.WsConnect); ok {
+			return progx.NewProgress((*httprxr.WsProgressHandler)(wsconn), code)
+		}
+
 	}
-	return &httprxr.WsProgress{Code: code}
+	return progx.NewProgress(nil, code)
 }

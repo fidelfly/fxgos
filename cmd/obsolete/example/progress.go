@@ -8,6 +8,7 @@ import (
 
 	"github.com/fidelfly/fxgo/gosrvx"
 	"github.com/fidelfly/fxgo/httprxr"
+	"github.com/fidelfly/fxgo/progx"
 )
 
 type ProgressExample struct {
@@ -45,8 +46,8 @@ func (pe *ProgressExample) ServiceProgress(w http.ResponseWriter, r *http.Reques
 
 }
 
-func goProgress(code string, step int, duration time.Duration, progressSubscribers ...httprxr.ProgressSubscriber) {
-	pd := httprxr.NewProgressDispatcher(code, progressSubscribers...)
+func goProgress(code string, step int, duration time.Duration, progressSubscribers ...progx.ProgressSubscriber) {
+	pd := progx.NewProgressDispatcher(code, progressSubscribers...)
 	defer pd.Success()
 	ticker := time.NewTicker(duration)
 	defer ticker.Stop()

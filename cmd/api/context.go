@@ -8,6 +8,7 @@ import (
 	"github.com/fidelfly/fxgo/gosrvx"
 	"github.com/fidelfly/fxgo/httprxr"
 	"github.com/fidelfly/fxgo/pkg/ctxh"
+	"github.com/fidelfly/fxgo/progx"
 
 	"github.com/fidelfly/fxgos/cmd/service/user"
 )
@@ -51,19 +52,19 @@ func GetRequestId(r *http.Request) string {
 	return ""
 }
 
-func ProgressSubscriber(subscribers ...httprxr.ProgressSubscriber) ctxh.ContextValueHolder {
+func ProgressSubscriber(subscribers ...progx.ProgressSubscriber) ctxh.ContextValueHolder {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, ProgressSubscriberKey, subscribers)
 	}
 }
 
-func GetProgressSubscriber(ctx context.Context) []httprxr.ProgressSubscriber {
+func GetProgressSubscriber(ctx context.Context) []progx.ProgressSubscriber {
 	ctxObj := ctx.Value(ProgressSubscriberKey)
 	if ctxObj == nil {
 		return nil
 	}
 
-	if subscribers, ok := ctxObj.([]httprxr.ProgressSubscriber); ok {
+	if subscribers, ok := ctxObj.([]progx.ProgressSubscriber); ok {
 		return subscribers
 	}
 	return nil
