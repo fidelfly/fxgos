@@ -45,3 +45,15 @@ func ReceiveChunk(stream grpc.ServerStream, writer io.Writer) error {
 
 	return nil
 }
+
+type ChunkStream struct {
+	stream grpc.ServerStream
+}
+
+func (cs *ChunkStream) Write(writer io.Writer) error {
+	return ReceiveChunk(cs.stream, writer)
+}
+
+func NewChunkStream(stream grpc.ServerStream) *ChunkStream {
+	return &ChunkStream{stream: stream}
+}

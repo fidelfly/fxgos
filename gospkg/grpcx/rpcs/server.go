@@ -26,7 +26,10 @@ func (fv FunctionValidator) Validate(authorization string) bool {
 }
 
 func NewServer(validator TokenValidator) *Server {
-	return &Server{grpc.NewServer(grpc.UnaryInterceptor(newInterceptor(validator)))}
+	return &Server{grpc.NewServer(
+		// use https://github.com/grpc-ecosystem/go-grpc-middleware to config more than one interceptor
+		grpc.UnaryInterceptor(newInterceptor(validator)),
+	)}
 }
 
 func (s *Server) ListenAndServe(address string) {
@@ -42,6 +45,9 @@ func (s *Server) ListenAndServe(address string) {
 
 func newInterceptor(validator TokenValidator) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+		if err := recover(); err != nil {
+			fmt.Printf("panic found during handling rpc request : %s", info.FullMethod)
+		}
 		if validator != nil {
 			md, ok := metadata.FromIncomingContext(ctx)
 			if !ok {
