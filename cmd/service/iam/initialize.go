@@ -18,7 +18,7 @@ func Initialize() error {
 		new(res.Model), new(res.Policy),
 	)
 	pub.Subscribe(pub.TopicResource, subscriber)
-	resDB.CreateJSONIndex("type", "*", "type")
+	resDB.CreateJSONIndex("type", "*", "type", "index", "init_index")
 	ScanIam(system.GetAssetPath("iam"))
 	return err
 }

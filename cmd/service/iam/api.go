@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/fidelfly/gox/logx"
+	"github.com/fidelfly/gox/pkg/mathx"
 	"github.com/tidwall/buntdb"
 
 	"github.com/fidelfly/fxgos/cmd/service/iam/iamx"
@@ -104,13 +105,16 @@ func Validate(query Query) (bool, error) {
 func ListResource(ctx context.Context, resourceType string) []*Resource {
 	resList := make([]*Resource, 0)
 	_ = resDB.GetDB().Update(func(tx *buntdb.Tx) error {
-		_ = tx.AscendEqual("type", fmt.Sprintf(`{"type":"%s"}`, resourceType), func(key, value string) bool {
-			iamRes := &Resource{}
-			if err := json.Unmarshal([]byte(value), iamRes); err == nil {
-				resList = append(resList, iamRes)
-			}
-			return true
-		})
+		_ = tx.AscendRange("type",
+			fmt.Sprintf(`{"type":"%s", "index": %d, "init_index": %d }`, resourceType, 0, 0),
+			fmt.Sprintf(`{"type":"%s", "index": %d, "init_index": %d }`, resourceType, mathx.MaxInt, mathx.MaxInt),
+			func(key, value string) bool {
+				iamRes := &Resource{}
+				if err := json.Unmarshal([]byte(value), iamRes); err == nil {
+					resList = append(resList, iamRes)
+				}
+				return true
+			})
 		return nil
 	})
 

@@ -79,6 +79,20 @@ func initIamResource(resources ...string) error {
 			Type      string
 			Resources []Resource
 		}
+		type IndexedResource struct {
+			Resource
+			InitIndex int `json:"init_index"`
+		}
+		resourceIndex := make(map[string]int)
+		populateIndex := func(resType string) int {
+			if i, ok := resourceIndex[resType]; ok {
+				resourceIndex[resType] = i + 1
+				return i
+			} else {
+				resourceIndex[resType] = 1
+				return 0
+			}
+		}
 		for _, resource := range resources {
 			resFile := &IamResource{}
 			if _, err0 := toml.DecodeFile(resource, resFile); err0 == nil {
@@ -87,7 +101,10 @@ func initIamResource(resources ...string) error {
 						if len(res0.Type) == 0 {
 							res0.Type = resFile.Type
 						}
-						err := resDB.Set(bcache.NewKey(res0.Type, res0.Code), res0)
+						err := resDB.Set(bcache.NewKey(res0.Type, res0.Code), IndexedResource{
+							Resource:  res0,
+							InitIndex: populateIndex(res0.Type),
+						})
 						if err != nil {
 							return err
 						}
