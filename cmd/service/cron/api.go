@@ -70,7 +70,7 @@ func JobMeta(data ...map[string]string) JobOption {
 	}
 }
 
-func StartupJob() JobOption {
+func RunOnStartup() JobOption {
 	return func(job *res.CronJob) {
 		job.OnStartup = true
 	}

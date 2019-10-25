@@ -37,6 +37,7 @@ func Start() {
 			}
 		}
 	}
+	myCronx.Start()
 }
 
 func logJob(job cronx.Job) cronx.Job {
