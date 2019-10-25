@@ -75,7 +75,7 @@ func logJob(job cronx.Job) cronx.Job {
 
 func GetJobId(md *cronx.Metadata) int64 {
 	if v, ok := md.Get(MetaJobId); ok {
-		if id, err := strconv.ParseInt(v, 10, 64); err != nil {
+		if id, err := strconv.ParseInt(v, 10, 64); err == nil {
 			return id
 		}
 	}
