@@ -246,8 +246,8 @@ func UpdatePolicyByRole(ctx context.Context, roleId int64, inheritRoles []int64,
 	return nil
 }
 
-func UpdatePolicyByUser(ctx context.Context, userId int64, roles []int64) error {
-	model.UpdateUserRole(userId, roles)
+func UpdatePolicyByUser(ctx context.Context, userId int64, roles []int64, superAdmin bool) error {
+	model.UpdateUserRole(userId, roles, superAdmin)
 	return nil
 }
 

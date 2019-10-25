@@ -66,12 +66,15 @@ func DeleteUserPolicy(userId int64) {
 }
 
 //export
-func UpdateUserRole(userId int64, roles []int64) {
+func UpdateUserRole(userId int64, roles []int64, superAdmin bool) {
 	enforcerCache.Range(func(key, value interface{}) bool {
 		//resType := key.(string)
 		e := value.(*casbin.Enforcer)
 		e.DeleteRolesForUser(iamx.EncodeUserSubject(userId))
 		//e.DeleteUser(iamx.EncodeUserSubject(userId))
+		if superAdmin {
+			e.AddRoleForUser(iamx.EncodeUserSubject(userId), "sa")
+		}
 		for _, role := range roles {
 			e.AddRoleForUser(iamx.EncodeUserSubject(userId), iamx.EncodeRoleSubject(role))
 		}

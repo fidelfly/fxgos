@@ -54,7 +54,7 @@ func userChanged(event pub.ResourceEvent) error {
 	case pub.ResourceUpdate:
 		logx.Debugf("User[%d] changed, update iam policies now...", event.Id)
 		if userData, err := user.Read(context.Background(), event.Id); err == nil {
-			return UpdatePolicyByUser(context.Background(), userData.Id, userData.Roles)
+			return UpdatePolicyByUser(context.Background(), userData.Id, userData.Roles, userData.SuperAdmin)
 		} else {
 			return err
 		}

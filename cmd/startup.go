@@ -16,6 +16,7 @@ import (
 	_ "github.com/fidelfly/fxgos/cmd/obsolete/caches"
 	"github.com/fidelfly/fxgos/cmd/router"
 	"github.com/fidelfly/fxgos/cmd/service/audit"
+	"github.com/fidelfly/fxgos/cmd/service/cron"
 	"github.com/fidelfly/fxgos/cmd/service/filedb"
 	"github.com/fidelfly/fxgos/cmd/service/iam"
 	"github.com/fidelfly/fxgos/cmd/service/otk"
@@ -83,6 +84,9 @@ func StartService() (err error) {
 		return
 	}
 
+	//start cron jobs
+	cron.Start()
+
 	// start Server
 	if system.SupportTLS() {
 		gosrvx.ListenAndServeTLS(system.TLS.CertFile, system.TLS.KeyFile, router.GetRootRouter(), system.Runtime.Port)
@@ -127,6 +131,10 @@ func initRuntime() error {
 }
 
 func initFunction() (err error) {
+	err = cron.Initialize()
+	if err != nil {
+		return
+	}
 	//init mail alert
 	mail.InitMailDelegator(*system.Mail)
 	logx.Info("Mail function is initialized.")
