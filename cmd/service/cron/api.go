@@ -50,11 +50,12 @@ func OneTimeJob(t time.Time) JobOption {
 		job.Type = OneTimeJobType
 	}
 }
-func JobType(t string) JobOption {
+
+/*func JobType(t string) JobOption {
 	return func(job *res.CronJob) {
 		job.Type = t
 	}
-}
+}*/
 func JobMeta(data ...map[string]string) JobOption {
 	return func(job *res.CronJob) {
 		md := make(map[string]string)
