@@ -70,6 +70,7 @@ func logJob(job cronx.Job) cronx.Job {
 				}, db.ID(id), db.Cols("status")))
 			}
 		}
+		logx.CaptureError(db.Create(audit))
 		return
 	})
 }

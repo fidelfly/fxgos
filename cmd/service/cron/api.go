@@ -106,7 +106,11 @@ func activateJob(cronJob *res.CronJob) (int, error) {
 			meta := makeMeta(cronJob)
 			meta[MetaJobRunWay] = automatic
 			if cronJob.Type == OneTimeJobType {
-				return myCronx.AddTimerJob(cronJob.Timer, job, meta), nil
+				if cronJob.Timer.After(time.Now()) {
+					return myCronx.AddTimerJob(cronJob.Timer, job, meta), nil
+				} else {
+					return myCronx.AddTimerJob(time.Now().Add(2*time.Minute), job, meta), nil
+				}
 			} else {
 				return myCronx.AddJob(cronJob.Spec, job, meta)
 			}
