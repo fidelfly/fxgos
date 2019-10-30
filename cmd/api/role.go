@@ -12,9 +12,8 @@ import (
 	"github.com/fidelfly/fxgos/cmd/service/iam/iamx"
 	"github.com/fidelfly/fxgos/cmd/service/role"
 	"github.com/fidelfly/fxgos/cmd/service/role/res"
-	"github.com/fidelfly/fxgos/cmd/utilities/mctx"
 	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
-	"github.com/fidelfly/gostool/db"
+	"github.com/fidelfly/gostool/dbo"
 )
 
 func RoleRoute(router *routex.Router) {
@@ -54,16 +53,21 @@ func listPolicy(w http.ResponseWriter, r *http.Request) {
 }
 
 func listRole(w http.ResponseWriter, r *http.Request) {
-	params := httprxr.GetRequestVars(r, "results", "page", "sortField", "sortOrder")
-	rsp, count, err := role.List(r.Context(), NewListInfo(params))
-	if err != nil {
-		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+	params := httprxr.ParseRequestVars(r, "results", "page", "sortField", "sortOrder")
+	if listInfo, err := NewList(params); err != nil {
+		httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.ExceptionMessage(err))
 		return
+	} else {
+		rsp, count, err := role.List(r.Context(), listInfo)
+		if err != nil {
+			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+			return
+		}
+		data := make(map[string]interface{})
+		data["count"] = count
+		data["data"] = rsp
+		httprxr.ResponseJSON(w, http.StatusOK, data)
 	}
-	data := make(map[string]interface{})
-	data["count"] = count
-	data["data"] = rsp
-	httprxr.ResponseJSON(w, http.StatusOK, data)
 }
 
 func getRole(w http.ResponseWriter, r *http.Request) {
@@ -102,32 +106,32 @@ func postRole(w http.ResponseWriter, r *http.Request) {
 		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 		return
 	}
-	roleData := &res.Role{
-		Code:        roleInput.Code,
-		Description: roleInput.Description,
-		Roles:       roleInput.Roles,
-	}
-	if len(roleData.Code) == 0 {
+
+	if len(roleInput.Code) == 0 {
 		httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.InvalidParamError("code"))
 		return
 	}
 
 	task.StartTrail()
-	task.SetField("RoleCode", roleData.Code)
-	ctx, dbs := mctx.WithDBSession(r.Context())
+	task.SetField("RoleCode", roleInput.Code)
+	ctx, dbs := dbo.WithDBSession(r.Context())
 	defer dbs.Close()
 	if err := dbs.Begin(); err != nil {
-		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(syserr.DatabaseErr(err)))
 	}
-	if rsp, err := role.Create(ctx, roleData); err != nil {
+	if rsp, err := role.Create(ctx, role.Form{
+		Code:        roleInput.Code,
+		Roles:       roleInput.Roles,
+		Description: roleInput.Description,
+	}); err != nil {
 		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 		task.LogTrailDone(err)
 		logx.CaptureError(dbs.Rollback())
 		return
 	} else {
 		task.LogTrailDone(nil)
-		if err := iam.UpdatePolicyByRole(ctx, rsp, roleData.Roles, roleInput.IamPolicys); err != nil {
-			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+		if err := iam.UpdatePolicyByRole(ctx, rsp.Id, rsp.Roles, roleInput.IamPolicys); err != nil {
+			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(syserr.DatabaseErr(err)))
 			logx.CaptureError(dbs.Rollback())
 			return
 		}
@@ -165,11 +169,14 @@ func putRole(w http.ResponseWriter, r *http.Request) {
 
 	task.StartTrail()
 	task.SetField("RoleCode", roleData.Code)
-	if err := role.Update(r.Context(), role.UpdateInput{
-		UpdateInfo: db.UpdateInfo{
-			Id:   roleData.Id,
-			Cols: []string{"description", "roles"},
-		},
+	ctx, dbs := dbo.WithDBSession(r.Context())
+	defer dbs.Close()
+	if err := dbs.Begin(); err != nil {
+		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(syserr.DatabaseErr(err)))
+	}
+	if err := role.Update(ctx, dbo.UpdateInfo{
+		Id:   roleData.Id,
+		Cols: []string{"description", "roles"},
 		Data: roleData,
 	}); err != nil {
 		if err == syserr.ErrNotFound {
@@ -177,10 +184,16 @@ func putRole(w http.ResponseWriter, r *http.Request) {
 		} else {
 			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 		}
+		logx.CaptureError(dbs.Rollback())
 		task.LogTrailDone(err)
 	} else {
 		task.LogTrailDone(nil)
-		if err := iam.UpdatePolicyByRole(r.Context(), roleData.Id, roleData.Roles, roleInput.IamPolicys); err != nil {
+		if err := iam.UpdatePolicyByRole(ctx, roleData.Id, roleData.Roles, roleInput.IamPolicys); err != nil {
+			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+			logx.CaptureError(dbs.Rollback())
+			return
+		}
+		if err := dbs.Commit(); err != nil {
 			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 			return
 		}

@@ -1,23 +1,22 @@
-package mctx
+package dbo
 
 import (
 	"context"
 
-	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
 	"github.com/fidelfly/gostool/db"
 )
 
 type dbSessionKey struct{}
 
 type CtxSession struct {
-	dbs        *db.Session
+	*db.Session
 	controlled bool
 }
 
 func (cs *CtxSession) Begin() error {
 	if cs.controlled {
-		if err := cs.dbs.BeginTransaction(); err != nil {
-			return syserr.DatabaseErr(err)
+		if err := cs.Session.Begin(); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -25,8 +24,8 @@ func (cs *CtxSession) Begin() error {
 
 func (cs *CtxSession) Commit() error {
 	if cs.controlled {
-		if err := cs.dbs.Commit(); err != nil {
-			return syserr.DatabaseErr(err)
+		if err := cs.Session.Commit(); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -34,8 +33,8 @@ func (cs *CtxSession) Commit() error {
 
 func (cs *CtxSession) Rollback() error {
 	if cs.controlled {
-		if err := cs.dbs.Rollback(); err != nil {
-			return syserr.DatabaseErr(err)
+		if err := cs.Session.Rollback(); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -43,31 +42,32 @@ func (cs *CtxSession) Rollback() error {
 
 func (cs *CtxSession) Close() {
 	if cs.controlled {
-		cs.dbs.Close()
+		cs.Session.Close()
 	}
 }
 
-/*func WithDBSession(ctx context.Context, dbs *db.Session) context.Context {
-	return context.WithValue(ctx, dbSessionKey{}, dbs)
-}*/
-
 func WithDBSession(ctx context.Context, opts ...db.SessionOption) (context.Context, *CtxSession) {
-	dbs := CurrentDBSession(ctx)
-	if dbs != nil {
-		return ctx, &CtxSession{dbs, false}
+	ctxDbs := CurrentDBSession(ctx)
+	if ctxDbs != nil {
+		return ctx, ctxDbs
 	}
-	dbs = db.NewSession(opts...)
+	dbs := db.NewSession(opts...)
 	return context.WithValue(ctx, dbSessionKey{}, dbs), &CtxSession{dbs, true}
 }
 
-func CurrentDBSession(ctx context.Context, opts ...db.SessionOption) *db.Session {
+func CurrentDBSession(ctx context.Context, opts ...db.SessionOption) *CtxSession {
 	if v := ctx.Value(dbSessionKey{}); v != nil {
 		if dbs, ok := v.(*db.Session); ok {
-			return dbs
+			return &CtxSession{dbs, false}
 		}
 	}
 	if len(opts) > 0 {
-		return db.NewSession(opts...)
+		return &CtxSession{db.NewSession(opts...), true}
 	}
 	return nil
+}
+
+func DefaultSession(session *db.Session) {
+	//do nothing
+	return
 }

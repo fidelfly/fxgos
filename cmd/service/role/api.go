@@ -8,11 +8,11 @@ import (
 
 	"github.com/fidelfly/fxgos/cmd/service/role/res"
 	res2 "github.com/fidelfly/fxgos/cmd/service/user/res"
-	"github.com/fidelfly/fxgos/cmd/utilities/dbo"
-	"github.com/fidelfly/fxgos/cmd/utilities/mctx"
+	"github.com/fidelfly/fxgos/cmd/utilities/mdbo"
 	"github.com/fidelfly/fxgos/cmd/utilities/pub"
 	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
 	"github.com/fidelfly/gostool/db"
+	"github.com/fidelfly/gostool/dbo"
 )
 
 type Form struct {
@@ -21,47 +21,41 @@ type Form struct {
 	Description string  `json:"description"`
 }
 
-func Create(ctx context.Context, form Form) (int64, error) {
-	role := new(res.Role)
+func Create(ctx context.Context, input interface{}) (*res.Role, error) {
+	var role *res.Role
+	if t, ok := input.(*res.Role); ok {
+		role = t
+	} else {
+		role = new(res.Role)
+	}
+
 	err := dbo.Create(ctx,
-		dbo.ApplyBeanOption(role, dbo.Assignment(form)),
-		dbo.PubResourceEvent(ResourceType, pub.ResourceCreate),
+		dbo.ApplyBeanOption(role, dbo.Assignment(input), mdbo.CreateUser(ctx)),
+		mdbo.PubResourceEvent(ResourceType, pub.ResourceCreate),
 	)
-	return role.Id, err
+	return role, err
 }
 
-type UpdateInput struct {
-	db.UpdateInfo
-	Data *res.Role
-}
-
-func Update(ctx context.Context, input UpdateInput) error {
-	if input.Data == nil {
+func Update(ctx context.Context, info dbo.UpdateInfo) error {
+	if info.Data == nil {
 		return syserr.ErrInvalidParam
 	}
-	resRole := input.Data
 
-	opts := make([]db.QueryOption, 0)
-	if input.Id > 0 {
-		resRole.Id = input.Id
-		opts = append(opts, db.ID(input.Id))
-	} else if resRole.Id > 0 {
-		opts = append(opts, db.ID(resRole.Id))
+	var role *res.Role
+	if t, ok := info.Data.(*res.Role); ok {
+		role = t
+	} else {
+		role = new(res.Role)
 	}
-	if len(input.Cols) > 0 {
-		opts = append(opts, db.Cols(append(input.Cols, "update_user")...))
-	}
-	mctx.FillUserInfo(ctx, resRole)
-	if rows, err := db.Update(resRole, opts...); err != nil {
+
+	opts := dbo.ApplytUpdateOption(role, info, mdbo.UpdateUser(ctx))
+
+	if rows, err := dbo.Update(ctx, role, opts,
+		mdbo.PubResourceEvent(ResourceType, pub.ResourceUpdate)); err != nil {
 		return syserr.DatabaseErr(err)
 	} else if rows == 0 {
 		return syserr.ErrNotFound
 	}
-	pub.Publish(pub.ResourceEvent{
-		Type:   ResourceType,
-		Action: pub.ResourceCreate,
-		Id:     resRole.Id,
-	}, pub.TopicResource)
 	return nil
 }
 
@@ -70,7 +64,7 @@ func Read(ctx context.Context, id int64) (*res.Role, error) {
 		return nil, syserr.ErrInvalidParam
 	}
 	resRole := &res.Role{Id: id}
-	if find, err := db.Read(resRole); err != nil {
+	if find, err := dbo.Read(ctx, resRole); err != nil {
 		return nil, syserr.DatabaseErr(err)
 	} else if !find {
 		return nil, syserr.ErrNotFound
@@ -83,7 +77,7 @@ func ReadByCode(ctx context.Context, code string) (*res.Role, error) {
 		return nil, syserr.ErrInvalidParam
 	}
 	resRole := &res.Role{Code: code}
-	if find, err := db.Read(resRole); err != nil {
+	if find, err := dbo.Read(ctx, resRole); err != nil {
 		return nil, syserr.DatabaseErr(err)
 	} else if !find {
 		return nil, syserr.ErrNotFound
@@ -108,34 +102,23 @@ func Delete(ctx context.Context, id int64) error {
 		return errorx.NewError(syserr.CodeOfDatabaseErr, "role_used_by_user")
 	}
 
-	if count, err := db.Delete(resRole); err != nil {
+	if count, err := dbo.Delete(ctx, resRole, nil,
+		mdbo.PubResourceEvent(ResourceType, pub.ResourceDelete)); err != nil {
 		return syserr.DatabaseErr(err)
 	} else if count == 0 {
 		return syserr.ErrNotFound
 	}
 
-	pub.Publish(pub.ResourceEvent{
-		Type:   ResourceType,
-		Action: pub.ResourceDelete,
-		Id:     id,
-	}, pub.TopicResource)
 	return nil
 }
 
-func List(ctx context.Context, input db.ListInfo) ([]*res.Role, int64, error) {
+func List(ctx context.Context, input *dbo.ListInfo, conds ...string) ([]*res.Role, int64, error) {
 	resRoles := make([]*res.Role, 0)
-	opts := make([]db.QueryOption, 0)
-	if len(input.Cond) > 0 {
-		opts = append(opts, db.Where(input.Cond))
-	}
-	queOpts := append(db.GetPagingOption(input), opts...)
-	if err := db.Find(&resRoles, queOpts...); err != nil {
-		return nil, 0, syserr.DatabaseErr(err)
-	}
 
-	count := int64(len(resRoles))
-	if !(count < input.Results && input.Page == 1) {
-		count, _ = db.Count(new(res.Role), opts...)
+	count, err := dbo.List(ctx, resRoles, input, db.Condition(conds...))
+
+	if err != nil {
+		return nil, 0, err
 	}
 
 	return resRoles, count, nil

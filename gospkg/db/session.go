@@ -15,6 +15,22 @@ type Session struct {
 
 type SessionCallback func(commit bool)
 
+func CommitCallback(f func()) SessionCallback {
+	return func(commit bool) {
+		if commit {
+			f()
+		}
+	}
+}
+
+func RollbackCallback(f func()) SessionCallback {
+	return func(commit bool) {
+		if !commit {
+			f()
+		}
+	}
+}
+
 func PairCallback(commitCall, rollbackCall func()) SessionCallback {
 	return func(commit bool) {
 		if commit {
@@ -119,20 +135,20 @@ func (dbs *Session) Close() {
 	dbs.orig.Close()
 }
 
-func (dbs *Session) BeginTransaction() error {
+func (dbs *Session) Begin() error {
 	dbs.inTransaction = true
 	return dbs.orig.Begin()
 }
 
-func (dbs *Session) EndTransaction(commit bool) error {
+/*func (dbs *Session) EndTransaction(commit bool) error {
 	if commit {
 		return dbs.Commit()
 	}
 	return dbs.Rollback()
-}
+}*/
 
 func (dbs *Session) Commit() error {
-	dbs.inTransaction = true
+	dbs.inTransaction = false
 	if err := dbs.orig.Commit(); err != nil {
 		return err
 	}
@@ -141,7 +157,7 @@ func (dbs *Session) Commit() error {
 }
 
 func (dbs *Session) Rollback() error {
-	dbs.inTransaction = true
+	dbs.inTransaction = false
 	if err := dbs.orig.Rollback(); err != nil {
 		return err
 	}

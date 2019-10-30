@@ -20,7 +20,7 @@ import (
 	"github.com/fidelfly/fxgos/cmd/utilities/auth"
 	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
 	"github.com/fidelfly/fxgos/cmd/utilities/system"
-	"github.com/fidelfly/gostool/db"
+	"github.com/fidelfly/gostool/dbo"
 	"github.com/fidelfly/gostool/mail"
 )
 
@@ -81,13 +81,16 @@ func updatePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if id, err := user.Update(r.Context(), user.UpdateInput{
-		UpdateInfo: db.UpdateInfo{Id: currentUser.Id, Cols: []string{"password"}},
-		Data:       &res.User{Id: currentUser.Id, Password: newPwd},
+	if err := user.Update(r.Context(), dbo.UpdateInfo{
+		Id:   currentUser.Id,
+		Cols: []string{"password"},
+		Data: &res.User{Id: currentUser.Id, Password: newPwd},
 	}); err != nil {
-		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
-	} else if id == 0 {
-		httprxr.ResponseJSON(w, http.StatusNotFound, nil)
+		if err == syserr.ErrNotFound {
+			httprxr.ResponseJSON(w, http.StatusNotFound, nil)
+		} else {
+			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+		}
 	} else {
 		httprxr.ResponseJSON(w, http.StatusOK, nil)
 	}
@@ -174,14 +177,16 @@ func activateUser(w http.ResponseWriter, r *http.Request) {
 		data.Password = params["pwd"]
 	}
 
-	if tarId, err := user.Update(r.Context(), user.UpdateInput{
-		UpdateInfo: db.UpdateInfo{Id: data.Id, Cols: updateCols},
-		Data:       data,
+	if err := user.Update(r.Context(), dbo.UpdateInfo{
+		Id:   data.Id,
+		Cols: updateCols,
+		Data: data,
 	}); err != nil {
-		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
-		return
-	} else if tarId == 0 {
-		httprxr.ResponseJSON(w, http.StatusNotFound, nil)
+		if err == syserr.ErrNotFound {
+			httprxr.ResponseJSON(w, http.StatusNotFound, nil)
+		} else {
+			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+		}
 		return
 	}
 
@@ -235,20 +240,19 @@ func resetPwd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userId, _ := strconv.ParseInt(otkData.TypeId, 10, 64)
-	if tarId, err := user.Update(r.Context(), user.UpdateInput{
-		UpdateInfo: db.UpdateInfo{
-			Id:   userId,
-			Cols: []string{"password"},
-		},
+	if err := user.Update(r.Context(), dbo.UpdateInfo{
+		Id:   userId,
+		Cols: []string{"password"},
 		Data: &res.User{
 			Id:       userId,
 			Password: params["pwd"],
 		},
 	}); err != nil {
-		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
-		return
-	} else if tarId == 0 {
-		httprxr.ResponseJSON(w, http.StatusNotFound, nil)
+		if err == syserr.ErrNotFound {
+			httprxr.ResponseJSON(w, http.StatusNotFound, nil)
+		} else {
+			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+		}
 		return
 	}
 
@@ -260,18 +264,27 @@ func resetPwd(w http.ResponseWriter, r *http.Request) {
 }
 
 func listUser(w http.ResponseWriter, r *http.Request) {
-	params := httprxr.GetRequestVars(r, "results", "page", "sortField", "sortOrder", "statusType", "includedDel")
-	statusType := params["statusType"]
-	includedDel, _ := strconv.ParseBool(params["includedDel"])
+	params := httprxr.ParseRequestVars(r, "results", "page", "sortField", "sortOrder", "statusType", "includedDel")
+	statusType := params.GetString("statusType")
+	includedDel, err := params.GetBool("includedDel")
+	if err != nil {
+		httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.ExceptionMessage(err))
+		return
+	}
+	listInfo, err := NewList(params)
+	if err != nil {
+		httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.ExceptionMessage(err))
+		return
+	}
 	cond := ""
 	if len(statusType) > 0 && statusType != "--" {
 		cond = fmt.Sprintf("status = '%s'", statusType)
 	} else if !includedDel {
 		cond = fmt.Sprintf("status != %d", user.StatusDeleted)
 	}
-	list, count, err := user.List(r.Context(), NewListInfo(params, cond))
+
+	list, count, err := user.List(r.Context(), listInfo, cond)
 	if err != nil {
-		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 		return
 	}
 	data := make(map[string]interface{})
@@ -302,20 +315,19 @@ func disableUser(w http.ResponseWriter, r *http.Request) {
 
 	task.StartTrail()
 	task.SetField("UserName", user.GetCache(userID).Name)
-	if tarId, err := user.Update(r.Context(), user.UpdateInput{
-		UpdateInfo: db.UpdateInfo{
-			Id:   userID,
-			Cols: []string{"status"},
-		},
+	if err := user.Update(r.Context(), dbo.UpdateInfo{
+		Id:   userID,
+		Cols: []string{"status"},
 		Data: &res.User{
-			Id:     userID,
 			Status: user.StatusInvalid,
 		},
 	}); err != nil {
-		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+		if err == syserr.ErrNotFound {
+			httprxr.ResponseJSON(w, http.StatusNotFound, nil)
+		} else {
+			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+		}
 		task.LogTrailDone(err)
-	} else if tarId == 0 {
-		httprxr.ResponseJSON(w, http.StatusNotFound, nil)
 	} else {
 		httprxr.ResponseJSON(w, http.StatusOK, nil)
 		task.LogTrailDone(nil)
@@ -357,21 +369,19 @@ func enableUser(w http.ResponseWriter, r *http.Request) {
 
 	task.StartTrail()
 	task.SetField("UserName", userData.Name)
-	if tarId, err := user.Update(r.Context(), user.UpdateInput{
-		UpdateInfo: db.UpdateInfo{
-			Id:   userID,
-			Cols: []string{"status"},
-		},
+	if err := user.Update(r.Context(), dbo.UpdateInfo{
+		Id:   userID,
+		Cols: []string{"status"},
 		Data: &res.User{
-			Id:     userID,
 			Status: user.StatusDeactivated,
 		},
 	}); err != nil {
-		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+		if err == syserr.ErrNotFound {
+			httprxr.ResponseJSON(w, http.StatusNotFound, nil)
+		} else {
+			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+		}
 		task.LogTrailDone(err)
-		return
-	} else if tarId == 0 {
-		httprxr.ResponseJSON(w, http.StatusNotFound, nil)
 		return
 	} else {
 		httprxr.ResponseJSON(w, http.StatusOK, nil)
@@ -520,11 +530,10 @@ func putUser(w http.ResponseWriter, r *http.Request) {
 
 	task.StartTrail()
 	task.SetField("UserName", user.GetCache(userID).Name)
-	if tarId, err := user.Update(r.Context(), user.UpdateInput{
-		UpdateInfo: db.UpdateInfo{
-			Id:   userID,
-			Cols: []string{"name", "avatar", "region", "dept", "tel", "roles"},
-		},
+	if err := user.Update(r.Context(), dbo.UpdateInfo{
+		Id:   userID,
+		Cols: []string{"name", "avatar", "region", "dept", "tel", "roles"},
+
 		Data: &res.User{
 			Id:     userID,
 			Name:   params.GetString("name"),
@@ -535,10 +544,12 @@ func putUser(w http.ResponseWriter, r *http.Request) {
 			Roles:  roles,
 		},
 	}); err != nil {
-		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+		if err == syserr.ErrNotFound {
+			httprxr.ResponseJSON(w, http.StatusNotFound, nil)
+		} else {
+			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+		}
 		task.LogTrailDone(err)
-	} else if tarId == 0 {
-		httprxr.ResponseJSON(w, http.StatusNotFound, nil)
 	} else {
 		httprxr.ResponseJSON(w, http.StatusOK, nil)
 		task.LogTrailDone(nil)
@@ -576,13 +587,13 @@ func postUser(w http.ResponseWriter, r *http.Request) {
 
 	task.StartTrail()
 	task.SetField("UserName", userData.Name)
-	if userId, err := user.Create(r.Context(), userData); err != nil {
+	if user, err := user.Create(r.Context(), userData); err != nil {
 		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 		task.LogTrailDone(err)
 		return
 	} else {
-		userData.Id = userId
-		httprxr.ResponseJSON(w, http.StatusOK, userId)
+		userData.Id = user.Id
+		httprxr.ResponseJSON(w, http.StatusOK, user.Id)
 		task.LogTrailDone(nil)
 	}
 

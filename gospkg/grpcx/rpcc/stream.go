@@ -23,7 +23,7 @@ func SendChunk(stream grpc.ClientStream, reader io.Reader, chunkSize ...int) err
 			}
 			return err
 		}
-		stream.SendMsg(&protob.Chunk{
+		_ = stream.SendMsg(&protob.Chunk{
 			Chunk: buf[:n],
 		})
 	}
@@ -40,7 +40,7 @@ func ReceiveChunk(stream grpc.ClientStream, writer io.Writer) error {
 			}
 			return err
 		}
-		writer.Write(c.Chunk)
+		_, _ = writer.Write(c.Chunk)
 	}
 
 	return nil

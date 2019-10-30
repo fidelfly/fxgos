@@ -8,25 +8,35 @@ import (
 
 	"github.com/fidelfly/fxgos/cmd/service/user/res"
 	"github.com/fidelfly/fxgos/cmd/utilities/auth"
+	"github.com/fidelfly/fxgos/cmd/utilities/mdbo"
 	"github.com/fidelfly/fxgos/cmd/utilities/pub"
 	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
 	"github.com/fidelfly/gostool/db"
+	"github.com/fidelfly/gostool/dbo"
 )
 
 func New() *res.User {
 	return &res.User{}
 }
 
-func Create(ctx context.Context, input *res.User) (id int64, err error) {
-	input.Password = auth.EncodePassword(input.Code, input.Password)
-	_, err = db.Create(input)
-	if err == nil {
-		pub.Publish(pub.ResourceEvent{
-			Type:   ResourceType,
-			Action: pub.ResourceCreate,
-			Id:     input.Id,
-		}, pub.TopicResource)
+func Create(ctx context.Context, input interface{}) (user *res.User, err error) {
+	if t, ok := input.(*res.User); ok {
+		user = t
+	} else {
+		user = new(res.User)
 	}
+
+	err = dbo.Create(ctx,
+		dbo.ApplyBeanOption(user,
+			dbo.Assignment(input),
+			mdbo.CreateUser(ctx),
+			dbo.FuncBeanOption(func(target interface{}) {
+				if user, ok := target.(*res.User); ok {
+					user.Password = auth.EncodePassword(user.Code, user.Password)
+				}
+			})),
+		mdbo.PubResourceEvent(ResourceType, pub.ResourceCreate),
+	)
 	return
 }
 
@@ -35,72 +45,71 @@ type UpdateInput struct {
 	Data *res.User
 }
 
-func Update(ctx context.Context, input UpdateInput) (int64, error) {
-	if input.Data == nil {
-		return 0, errors.New("data is empty")
+func Update(ctx context.Context, info dbo.UpdateInfo) error {
+	if info.Data == nil {
+		return syserr.ErrInvalidParam
 	}
 
-	id := input.Data.Id
-	pwdChange := len(input.Data.Password) > 0
+	var user *res.User
+	if t, ok := info.Data.(*res.User); ok {
+		user = t
+	} else {
+		user = new(res.User)
+	}
+
+	opts := dbo.ApplytUpdateOption(user, info, mdbo.UpdateUser(ctx))
+
+	id := user.Id
+	pwdChange := len(user.Password) > 0
 	roleChange := false
 	statusChange := false
-	opts := make([]db.QueryOption, 0)
-	if input.Id > 0 {
-		opts = append(opts, db.ID(input.Id))
-		id = input.Id
-	}
-	if len(input.Cols) > 0 {
-		opts = append(opts, db.Cols(input.Cols...))
-		pwdChange = strx.IndexOfSlice(input.Cols, "password") >= 0
-		roleChange = strx.IndexOfSlice(input.Cols, "role_id") >= 0
-		statusChange = strx.IndexOfSlice(input.Cols, "status") >= 0
+
+	if len(info.Cols) > 0 {
+		pwdChange = strx.IndexOfSlice(info.Cols, "password") >= 0
+		roleChange = strx.IndexOfSlice(info.Cols, "role_id") >= 0
+		statusChange = strx.IndexOfSlice(info.Cols, "status") >= 0
 	}
 
-	resUser := &res.User{Id: id}
-	if find, err := db.Read(resUser); err != nil {
-		return 0, err
-	} else if !find {
-		return 0, nil
+	resUser, err := Read(ctx, id)
+	if err != nil {
+		return err
 	}
+
 	if pwdChange {
-		input.Data.Password = auth.EncodePassword(resUser.Code, input.Data.Password)
+		user.Password = auth.EncodePassword(resUser.Code, user.Password)
 	}
 	if statusChange {
-		if resUser.Status != StatusInvalid && input.Data.Status == StatusDeactivated {
-			return 0, errors.New("user status is not invalid")
+		if resUser.Status != StatusInvalid && user.Status == StatusDeactivated {
+			return errors.New("user status is not invalid")
 		}
-		if resUser.Status != StatusDeactivated && input.Data.Status == StatusValid {
-			return 0, errors.New("user status is not deactived")
-		}
-	}
-	if rows, err := db.Update(input.Data, opts...); err != nil {
-		return 0, err
-	} else if rows > 0 {
-		pub.Publish(pub.ResourceEvent{
-			Type:   ResourceType,
-			Action: pub.ResourceUpdate,
-			Id:     input.Data.Id,
-		}, pub.TopicResource)
-
-		if roleChange {
-			pub.Publish(nil, pub.TopicRoleUpdate)
-			//_ = mss.RolePub.Publish(ctx, &iam.RoleEvent{UserId: resUser.Id, RoleId: resUser.RoleId})
+		if resUser.Status != StatusDeactivated && user.Status == StatusValid {
+			return errors.New("user status is not deactived")
 		}
 	}
-	return input.Id, nil
+	if _, err := dbo.Update(ctx, user, opts,
+		mdbo.PubResourceEvent(ResourceType, pub.ResourceUpdate),
+		dbo.SessionAfter(func(ctx context.Context, bean interface{}) {
+			if roleChange {
+				pub.Publish(nil, pub.TopicRoleUpdate) //todo add real role update
+			}
+		}),
+	); err != nil {
+		return err
+	}
+	return nil
 }
 
 func Read(ctx context.Context, id int64) (*res.User, error) {
 	if id <= 0 {
-		return nil, errors.New("invalid value of id")
+		return nil, syserr.ErrInvalidParam
 	}
 	user := &res.User{Id: id}
-	if find, err := db.Read(user); err != nil {
-		return nil, err
-	} else if find {
-		return user, nil
+	if find, err := dbo.Read(ctx, user); err != nil {
+		return nil, syserr.DatabaseErr(err)
+	} else if !find {
+		return nil, syserr.ErrNotFound
 	}
-	return nil, nil
+	return user, nil
 }
 
 //export
@@ -109,12 +118,12 @@ func ReadByCode(ctx context.Context, code string) (*res.User, error) {
 		return nil, syserr.ErrInvalidParam
 	}
 	user := &res.User{Code: code}
-	if find, err := db.Read(user); err != nil {
-		return nil, err
-	} else if find {
-		return user, nil
+	if find, err := dbo.Read(ctx, user); err != nil {
+		return nil, syserr.DatabaseErr(err)
+	} else if !find {
+		return nil, syserr.ErrNotFound
 	}
-	return nil, syserr.ErrNotFound
+	return user, nil
 }
 
 func ReadByEmail(ctx context.Context, email string) (*res.User, error) {
@@ -122,7 +131,7 @@ func ReadByEmail(ctx context.Context, email string) (*res.User, error) {
 		return nil, syserr.ErrInvalidParam
 	}
 	user := &res.User{Email: email}
-	if find, err := db.Read(user); err != nil {
+	if find, err := dbo.Read(ctx, user); err != nil {
 		return nil, err
 	} else if find {
 		return user, nil
@@ -142,19 +151,15 @@ func Delete(ctx context.Context, id int64) error {
 	}
 	if resUser.Status != StatusDeleted {
 		resUser.Status = StatusDeleted
-		if _, err := db.Update(resUser, db.ID(id), db.Cols("status")); err != nil {
+		if _, err := dbo.Update(ctx, resUser,
+			[]db.QueryOption{db.ID(id), db.Cols("status")},
+			mdbo.PubResourceEvent(ResourceType, pub.ResourceDelete),
+		); err != nil {
 			return syserr.DatabaseErr(err)
 		}
 	}
-	pub.Publish(pub.ResourceEvent{
-		Type:   ResourceType,
-		Action: pub.ResourceDelete,
-		Id:     resUser.Id,
-	}, pub.TopicResource)
 
 	return nil
-	//mskit.RemoveUserCache(resUser.Id)
-	//_ = mss.RolePub.Publish(ctx, &iam.RoleEvent{UserId: resUser.Id})
 }
 
 type ValidateInput struct {
@@ -179,21 +184,15 @@ func Validate(ctx context.Context, input ValidateInput) (*res.User, error) {
 	return nil, errors.New("invalid user or password")
 }
 
-func List(ctx context.Context, input db.ListInfo) (results []*res.User, count int64, err error) {
+func List(ctx context.Context, input *dbo.ListInfo, conds ...string) (results []*res.User, count int64, err error) {
 	results = make([]*res.User, 0)
-	opts := make([]db.QueryOption, 0)
-	if len(input.Cond) > 0 {
-		opts = append(opts, db.Where(input.Cond))
-	}
-	queOpts := append(append(db.GetPagingOption(input), db.Desc("create_time")), opts...)
-	if err = db.Find(&results, queOpts...); err != nil {
+
+	count, err = dbo.List(ctx, results, input, db.Condition(conds...))
+
+	if err != nil {
 		return nil, 0, err
 	}
 
-	count = int64(len(results))
-	if !(count < input.Results && input.Page == 1) {
-		count, _ = db.Count(new(res.User), opts...)
-	}
 	return
 }
 

@@ -1,14 +1,11 @@
 package api
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 
 	"github.com/fidelfly/gox/gosrvx"
 	"github.com/fidelfly/gox/httprxr"
-	"github.com/fidelfly/gox/pkg/ctxh"
-	"github.com/fidelfly/gox/progx"
 
 	"github.com/fidelfly/fxgos/cmd/service/user"
 )
@@ -52,7 +49,7 @@ func GetRequestId(r *http.Request) string {
 	return ""
 }
 
-func ProgressSubscriber(subscribers ...progx.ProgressSubscriber) ctxh.ContextValueHolder {
+/*func ProgressSubscriber(subscribers ...progx.ProgressSubscriber) ctxx.ContextValueHolder {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, ProgressSubscriberKey, subscribers)
 	}
@@ -68,4 +65,4 @@ func GetProgressSubscriber(ctx context.Context) []progx.ProgressSubscriber {
 		return subscribers
 	}
 	return nil
-}
+}*/

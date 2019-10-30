@@ -12,6 +12,7 @@ import (
 	"github.com/fidelfly/fxgos/cmd/service/iam"
 	"github.com/fidelfly/fxgos/cmd/service/user"
 	"github.com/fidelfly/gostool/db"
+	"github.com/fidelfly/gostool/dbo"
 )
 
 const Token = "/api/token"
@@ -40,6 +41,25 @@ func CheckEmptyVar(w http.ResponseWriter, r *http.Request, vars httprxr.RequestV
 		}
 	}
 	return true
+}
+
+func NewList(param httprxr.RequestVar) (*dbo.ListInfo, error) {
+	info := &dbo.ListInfo{}
+	if result, err := param.GetInt("results"); err != nil {
+		return nil, err
+	} else {
+		info.Results = int(result)
+	}
+	if page, err := param.GetInt("page"); err != nil {
+		return nil, err
+	} else {
+		info.Page = int(page)
+	}
+
+	info.SortField = param.GetString("sortField")
+	info.SortOrder = param.GetString("sortOrder")
+
+	return info, nil
 }
 
 func NewListInfo(params map[string]string, cond ...string) db.ListInfo {
@@ -79,5 +99,12 @@ func userDecorator(idField string, fields ...string) jmap.Decorator {
 				}
 			}
 		}
+	}
+}
+
+func DeferResponse(w http.ResponseWriter, err error) {
+	if err != nil {
+		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+		return
 	}
 }

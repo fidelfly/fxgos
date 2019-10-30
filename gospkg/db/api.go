@@ -91,6 +91,15 @@ func Where(query interface{}, args ...interface{}) QueryOption {
 	}
 }
 
+func Condition(conds ...string) QueryOption {
+	return func(session *xorm.Session) *xorm.Session {
+		for _, cond := range conds {
+			session = session.And(cond)
+		}
+		return session
+	}
+}
+
 func Limit(limit int, start ...int) QueryOption {
 	return func(session *xorm.Session) *xorm.Session {
 		return session.Limit(limit, start...)

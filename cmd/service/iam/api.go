@@ -15,6 +15,7 @@ import (
 	"github.com/fidelfly/fxgos/cmd/service/iam/res"
 	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
 	"github.com/fidelfly/gostool/db"
+	"github.com/fidelfly/gostool/dbo"
 )
 
 //export
@@ -219,9 +220,9 @@ func UpdatePolicyByRole(ctx context.Context, roleId int64, inheritRoles []int64,
 		}
 	}
 
-	dbSession := db.NewSession()
+	dbSession := dbo.CurrentDBSession(ctx, dbo.DefaultSession)
 	defer dbSession.Close()
-	if err := dbSession.BeginTransaction(); err != nil {
+	if err := dbSession.Begin(); err != nil {
 		return syserr.DatabaseErr(err)
 	}
 	defer func() {
@@ -242,7 +243,11 @@ func UpdatePolicyByRole(ctx context.Context, roleId int64, inheritRoles []int64,
 	if err := dbSession.Commit(); err != nil {
 		return syserr.DatabaseErr(err)
 	}
-	model.UpdateRolePolicy(roleId, inheritRoles...)
+
+	dbSession.AddCallback(db.CommitCallback(func() {
+		model.UpdateRolePolicy(roleId, inheritRoles...)
+	}))
+
 	return nil
 }
 

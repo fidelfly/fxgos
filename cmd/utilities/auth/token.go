@@ -23,7 +23,7 @@ func setupAuthServer(clients ...authx.AuthClient) (server *authx.Server, err err
 	server = authx.NewOAuthServer()
 	server.SetTokenStorage(tokenStore)
 	cps := make([]authx.ClientInfo, len(clients))
-	for index, _ := range clients {
+	for index := range clients {
 		cps[index] = &clients[index]
 	}
 	server.SetClients(cps...)
