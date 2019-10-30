@@ -7,7 +7,7 @@ import (
 )
 
 type SessionHook interface {
-	Option(ctx context.Context, dbs *db.Session)
+	Option(ctx context.Context, dbs *db.Session) //todo should remove???
 	Before(ctx context.Context, bean interface{})
 	After(ctx context.Context, bean interface{})
 }

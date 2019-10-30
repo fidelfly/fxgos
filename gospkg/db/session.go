@@ -132,6 +132,9 @@ func (dbs *Session) Count(data interface{}, opts ...QueryOption) (int64, error) 
 }
 
 func (dbs *Session) Close() {
+	if dbs.inTransaction {
+		dbs.Rollback()
+	}
 	dbs.orig.Close()
 }
 
