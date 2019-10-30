@@ -5,12 +5,14 @@ import (
 	"strconv"
 
 	"github.com/fidelfly/gox/httprxr"
+	"github.com/fidelfly/gox/logx"
 	"github.com/fidelfly/gox/routex"
 
 	"github.com/fidelfly/fxgos/cmd/service/iam"
 	"github.com/fidelfly/fxgos/cmd/service/iam/iamx"
 	"github.com/fidelfly/fxgos/cmd/service/role"
 	"github.com/fidelfly/fxgos/cmd/service/role/res"
+	"github.com/fidelfly/fxgos/cmd/utilities/mctx"
 	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
 	"github.com/fidelfly/gostool/db"
 )
@@ -112,17 +114,27 @@ func postRole(w http.ResponseWriter, r *http.Request) {
 
 	task.StartTrail()
 	task.SetField("RoleCode", roleData.Code)
-	if rsp, err := role.Create(r.Context(), roleData); err != nil {
+	ctx, dbs := mctx.WithDBSession(r.Context())
+	defer dbs.Close()
+	if err := dbs.Begin(); err != nil {
+		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+	}
+	if rsp, err := role.Create(ctx, roleData); err != nil {
 		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 		task.LogTrailDone(err)
+		logx.CaptureError(dbs.Rollback())
 		return
 	} else {
 		task.LogTrailDone(nil)
-		if err := iam.UpdatePolicyByRole(r.Context(), rsp, roleData.Roles, roleInput.IamPolicys); err != nil {
+		if err := iam.UpdatePolicyByRole(ctx, rsp, roleData.Roles, roleInput.IamPolicys); err != nil {
+			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
+			logx.CaptureError(dbs.Rollback())
+			return
+		}
+		if err := dbs.Commit(); err != nil {
 			httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 			return
 		}
-
 		httprxr.ResponseJSON(w, http.StatusOK, rsp)
 	}
 }

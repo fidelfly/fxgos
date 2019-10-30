@@ -8,27 +8,26 @@ import (
 
 	"github.com/fidelfly/fxgos/cmd/service/role/res"
 	res2 "github.com/fidelfly/fxgos/cmd/service/user/res"
+	"github.com/fidelfly/fxgos/cmd/utilities/dbo"
 	"github.com/fidelfly/fxgos/cmd/utilities/mctx"
 	"github.com/fidelfly/fxgos/cmd/utilities/pub"
 	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
 	"github.com/fidelfly/gostool/db"
 )
 
-func Create(ctx context.Context, resRole *res.Role) (int64, error) {
-	if resRole == nil {
-		return 0, syserr.ErrInvalidParam
-	}
-	mctx.FillUserInfo(ctx, resRole)
-	if _, err := db.Create(resRole); err != nil {
-		return 0, syserr.DatabaseErr(err)
-	} else {
-		pub.Publish(pub.ResourceEvent{
-			Type:   ResourceType,
-			Action: pub.ResourceCreate,
-			Id:     resRole.Id,
-		}, pub.TopicResource)
-		return resRole.Id, nil
-	}
+type Form struct {
+	Code        string  `json:"code"`
+	Roles       []int64 `json:"roles"`
+	Description string  `json:"description"`
+}
+
+func Create(ctx context.Context, form Form) (int64, error) {
+	role := new(res.Role)
+	err := dbo.Create(ctx,
+		dbo.ApplyBeanOption(role, dbo.Assignment(form)),
+		dbo.PubResourceEvent(ResourceType, pub.ResourceCreate),
+	)
+	return role.Id, err
 }
 
 type UpdateInput struct {

@@ -22,11 +22,13 @@ func GetUserId(ctx context.Context) int64 {
 	return 0
 }
 
-func FillUserInfo(ctx context.Context, target interface{}) {
+func FillUserInfo(ctx context.Context, target interface{}) bool {
 	userId := GetUserId(ctx)
 	if userId > 0 {
 		setUserInfo(target, userId)
+		return true
 	}
+	return false
 }
 
 func setUserInfo(target interface{}, userId int64) {

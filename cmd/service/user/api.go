@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/fidelfly/gox/pkg/strh"
+	"github.com/fidelfly/gox/pkg/strx"
 
 	"github.com/fidelfly/fxgos/cmd/service/user/res"
 	"github.com/fidelfly/fxgos/cmd/utilities/auth"
@@ -51,9 +51,9 @@ func Update(ctx context.Context, input UpdateInput) (int64, error) {
 	}
 	if len(input.Cols) > 0 {
 		opts = append(opts, db.Cols(input.Cols...))
-		pwdChange = strh.IndexOfSlice(input.Cols, "password") >= 0
-		roleChange = strh.IndexOfSlice(input.Cols, "role_id") >= 0
-		statusChange = strh.IndexOfSlice(input.Cols, "status") >= 0
+		pwdChange = strx.IndexOfSlice(input.Cols, "password") >= 0
+		roleChange = strx.IndexOfSlice(input.Cols, "role_id") >= 0
+		statusChange = strx.IndexOfSlice(input.Cols, "status") >= 0
 	}
 
 	resUser := &res.User{Id: id}

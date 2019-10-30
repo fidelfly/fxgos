@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/fidelfly/gox/httprxr"
-	"github.com/fidelfly/gox/pkg/strh"
+	"github.com/fidelfly/gox/pkg/strx"
 	"github.com/fidelfly/gox/routex"
 
 	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
@@ -26,7 +26,7 @@ func queryCode(w http.ResponseWriter, r *http.Request) {
 	if !CheckEmptyParam(w, r, params, "resource", "code") {
 		return
 	}
-	if exist, err := queryExist(r.Context(), strh.UnderscoreString(params["resource"]), fmt.Sprintf("code = '%s' ", params["code"])); err != nil {
+	if exist, err := queryExist(r.Context(), strx.UnderscoreString(params["resource"]), fmt.Sprintf("code = '%s' ", params["code"])); err != nil {
 		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 	} else {
 		httprxr.ResponseJSON(w, http.StatusOK, exist)
@@ -61,7 +61,7 @@ func queryField(w http.ResponseWriter, r *http.Request) {
 	if !CheckEmptyParam(w, r, params, "resource", "field", "value", "cond") {
 		return
 	}
-	if rsp, err := queryExist(r.Context(), strh.UnderscoreString(params["resource"]), fmt.Sprintf("%s = '%s' and %s ", params["field"], params["value"], params["cond"])); err != nil {
+	if rsp, err := queryExist(r.Context(), strx.UnderscoreString(params["resource"]), fmt.Sprintf("%s = '%s' and %s ", params["field"], params["value"], params["cond"])); err != nil {
 		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 	} else {
 		httprxr.ResponseJSON(w, http.StatusOK, rsp)
