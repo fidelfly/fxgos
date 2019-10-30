@@ -8,7 +8,7 @@ func AutoClose(autoClose bool) SessionOption {
 	}
 }
 
-func WithCallback(callbacks ...SessionCallback) SessionOption {
+func WithCallback(callbacks ...TxCallback) SessionOption {
 	return func(session *Session) {
 		session.callbacks = append(session.callbacks, callbacks...)
 	}

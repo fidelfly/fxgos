@@ -98,3 +98,21 @@ func List(ctx context.Context, target interface{}, info *ListInfo, option ...db.
 
 	return int64(count), nil
 }
+
+func Find(ctx context.Context, target interface{}, option ...db.QueryOption) error {
+	if reflect.TypeOf(target).Kind() != reflect.Slice {
+		return errors.New("target is not a slice")
+	}
+	dbs := CurrentDBSession(ctx, db.AutoClose(true))
+	return dbs.Find(target, option...)
+}
+
+func Exist(ctx context.Context, target interface{}, option ...db.QueryOption) (bool, error) {
+	dbs := CurrentDBSession(ctx, db.AutoClose(true))
+	return dbs.Exist(target, option...)
+}
+
+func Count(ctx context.Context, target interface{}, option ...db.QueryOption) (int64, error) {
+	dbs := CurrentDBSession(ctx, db.AutoClose(true))
+	return dbs.Count(target, option...)
+}

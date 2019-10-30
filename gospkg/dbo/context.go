@@ -55,6 +55,11 @@ func WithDBSession(ctx context.Context, opts ...db.SessionOption) (context.Conte
 	return context.WithValue(ctx, dbSessionKey{}, dbs), &CtxSession{dbs, true}
 }
 
+func NewCtxSession(ctx context.Context, opts ...db.SessionOption) (context.Context, *CtxSession) {
+	dbs := db.NewSession(opts...)
+	return context.WithValue(ctx, dbSessionKey{}, dbs), &CtxSession{dbs, true}
+}
+
 func CurrentDBSession(ctx context.Context, opts ...db.SessionOption) *CtxSession {
 	if v := ctx.Value(dbSessionKey{}); v != nil {
 		if dbs, ok := v.(*db.Session); ok {

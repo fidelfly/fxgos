@@ -49,7 +49,8 @@ func Update(ctx context.Context, info dbo.UpdateInfo) error {
 	if info.Data == nil {
 		return syserr.ErrInvalidParam
 	}
-
+	ctx, dbs := dbo.WithDBSession(ctx, db.AutoClose(false))
+	defer dbs.Close()
 	var user *res.User
 	if t, ok := info.Data.(*res.User); ok {
 		user = t
@@ -144,7 +145,9 @@ func Delete(ctx context.Context, id int64) error {
 		return syserr.ErrInvalidParam
 	}
 	resUser := &res.User{Id: id}
-	if find, err := db.Read(resUser); err != nil {
+	ctx, dbs := dbo.WithDBSession(ctx, db.AutoClose(false))
+	defer dbs.Close()
+	if find, err := dbo.Read(ctx, resUser); err != nil {
 		return syserr.DatabaseErr(err)
 	} else if !find {
 		return syserr.ErrNotFound
@@ -175,7 +178,7 @@ func Validate(ctx context.Context, input ValidateInput) (*res.User, error) {
 		Code:  input.Code,
 		Email: input.Email,
 	}
-	if ok, _ := db.Read(user, db.Where("status = ?", StatusValid)); ok {
+	if ok, _ := dbo.Read(ctx, user, db.Where("status = ?", StatusValid)); ok {
 		encodePwd := auth.EncodePassword(user.Code, input.Password)
 		if encodePwd == user.Password {
 			return user, nil

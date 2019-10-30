@@ -10,12 +10,12 @@ type Session struct {
 	orig          *xorm.Session
 	autoClose     bool
 	inTransaction bool
-	callbacks     []SessionCallback
+	callbacks     []TxCallback
 }
 
-type SessionCallback func(commit bool)
+type TxCallback func(commit bool)
 
-func CommitCallback(f func()) SessionCallback {
+func CommitCallback(f func()) TxCallback {
 	return func(commit bool) {
 		if commit {
 			f()
@@ -23,7 +23,7 @@ func CommitCallback(f func()) SessionCallback {
 	}
 }
 
-func RollbackCallback(f func()) SessionCallback {
+func RollbackCallback(f func()) TxCallback {
 	return func(commit bool) {
 		if !commit {
 			f()
@@ -31,7 +31,7 @@ func RollbackCallback(f func()) SessionCallback {
 	}
 }
 
-func PairCallback(commitCall, rollbackCall func()) SessionCallback {
+func PairCallback(commitCall, rollbackCall func()) TxCallback {
 	return func(commit bool) {
 		if commit {
 			if commitCall != nil {
@@ -45,7 +45,7 @@ func PairCallback(commitCall, rollbackCall func()) SessionCallback {
 	}
 }
 
-func (dbs *Session) AddCallback(calls ...SessionCallback) {
+func (dbs *Session) AddTxCallback(calls ...TxCallback) {
 	if dbs.inTransaction {
 		dbs.callbacks = append(dbs.callbacks, calls...)
 	} else {

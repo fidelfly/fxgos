@@ -244,7 +244,7 @@ func UpdatePolicyByRole(ctx context.Context, roleId int64, inheritRoles []int64,
 		return syserr.DatabaseErr(err)
 	}
 
-	dbSession.AddCallback(db.CommitCallback(func() {
+	dbSession.AddTxCallback(db.CommitCallback(func() {
 		model.UpdateRolePolicy(roleId, inheritRoles...)
 	}))
 

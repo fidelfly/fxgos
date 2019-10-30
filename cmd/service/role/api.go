@@ -90,13 +90,15 @@ func Delete(ctx context.Context, id int64) error {
 		return syserr.ErrInvalidParam
 	}
 	resRole := &res.Role{Id: id}
-	if count, err := db.Count(res.Role{}, db.Where("roles like ?", fmt.Sprintf("%%%d%%", id))); err != nil {
+	ctx, dbs := dbo.WithDBSession(ctx, db.AutoClose(false))
+	defer dbs.Close()
+	if count, err := dbo.Count(ctx, res.Role{}, db.Where("roles like ?", fmt.Sprintf("%%%d%%", id))); err != nil {
 		return syserr.DatabaseErr(err)
 	} else if count > 0 {
 		return errorx.NewError(syserr.CodeOfDatabaseErr, "role_used_by_role")
 	}
 
-	if count, err := db.Count(res2.User{}, db.Where("roles like ?", fmt.Sprintf("%%%d%%", id))); err != nil {
+	if count, err := dbo.Count(ctx, res2.User{}, db.Where("roles like ?", fmt.Sprintf("%%%d%%", id))); err != nil {
 		return syserr.DatabaseErr(err)
 	} else if count > 0 {
 		return errorx.NewError(syserr.CodeOfDatabaseErr, "role_used_by_user")
