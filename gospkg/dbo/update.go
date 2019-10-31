@@ -52,12 +52,12 @@ type UpdateInfo struct {
 func (info UpdateInfo) Apply(target interface{}) []db.QueryOption {
 	options := make([]db.QueryOption, 0)
 	if info.Id > 0 {
-		reflectx.SetField(target, reflectx.FV{"Id", info.Id})
+		reflectx.SetField(target, reflectx.FV{Field: "Id", Value: info.Id})
 		options = append(options, db.ID(info.Id))
 	} else if info.Data != nil {
 		if v := reflectx.GetField(info.Data, "Id"); v != nil {
 			if id, ok := v.(int64); ok {
-				reflectx.SetField(target, reflectx.FV{"Id", id})
+				reflectx.SetField(target, reflectx.FV{Field: "Id", Value: id})
 				options = append(options, db.ID(info.Id))
 			}
 		}
