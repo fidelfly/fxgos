@@ -10,6 +10,7 @@ import (
 
 	"github.com/fidelfly/fxgos/cmd/service/cron/res"
 	"github.com/fidelfly/gostool/db"
+	"github.com/fidelfly/gostool/dbo"
 )
 
 var myCronx = cronx.New(cronx.WithMiddleware(logJob))
@@ -62,15 +63,17 @@ func logJob(job cronx.Job) cronx.Job {
 			audit.Status = Done
 			logx.Infof(`Job (id = %d, code = "%s", type = "%s") ends with positive result`, id, code, jobType)
 		}
+		dbs := dbo.CurrentDBSession(ctx, dbo.DefaultSession)
+		defer dbs.Close()
 		if jobType == OneTimeJobType {
 			if way, ok := md.Get(MetaJobRunWay); ok && way == automatic {
-				logx.CaptureError(db.Update(&res.CronJob{
+				logx.CaptureError(dbs.Update(&res.CronJob{
 					Id:     id,
 					Status: JobExpired,
 				}, db.ID(id), db.Cols("status")))
 			}
 		}
-		logx.CaptureError(db.Create(audit))
+		logx.CaptureError(dbs.Insert(audit))
 		return
 	})
 }
