@@ -75,60 +75,89 @@ func (dbs *Session) NoAutoTime() {
 	dbs.orig.NoAutoTime()
 }
 
-func (dbs *Session) Insert(data interface{}, opts ...QueryOption) (int64, error) {
+func (dbs *Session) Insert(data interface{}, opts ...QueryOption) (affected int64, err error) {
 	if dbs.autoClose {
 		defer dbs.Close()
 	}
-	dbs.orig = attachOption(dbs.orig, opts...)
-	return dbs.orig.Insert(data)
+	attachOption(dbs, opts...)
+	affected, err = dbs.orig.Insert(data)
+
+	if !dbs.inTransaction {
+		dbs.callback(err == nil)
+	}
+	return
 }
 
-func (dbs *Session) Update(data interface{}, opts ...QueryOption) (int64, error) {
+func (dbs *Session) Update(data interface{}, opts ...QueryOption) (affected int64, err error) {
 	if dbs.autoClose {
 		defer dbs.Close()
 	}
-	dbs.orig = attachOption(dbs.orig, opts...)
-	return dbs.orig.Update(data)
+	attachOption(dbs, opts...)
+	affected, err = dbs.orig.Update(data)
+	if !dbs.inTransaction {
+		dbs.callback(err == nil)
+	}
+	return
 }
 
-func (dbs *Session) Get(data interface{}, opts ...QueryOption) (bool, error) {
+func (dbs *Session) Get(data interface{}, opts ...QueryOption) (affected bool, err error) {
 	if dbs.autoClose {
 		defer dbs.Close()
 	}
-	dbs.orig = attachOption(dbs.orig, opts...)
-	return dbs.orig.Get(data)
+	attachOption(dbs, opts...)
+	affected, err = dbs.orig.Get(data)
+	if !dbs.inTransaction {
+		dbs.callback(err == nil)
+	}
+	return
 }
 
-func (dbs *Session) Delete(data interface{}, opts ...QueryOption) (int64, error) {
+func (dbs *Session) Delete(data interface{}, opts ...QueryOption) (affected int64, err error) {
 	if dbs.autoClose {
 		defer dbs.Close()
 	}
-	dbs.orig = attachOption(dbs.orig, opts...)
-	return dbs.orig.Delete(data)
+	attachOption(dbs, opts...)
+	affected, err = dbs.orig.Delete(data)
+	if !dbs.inTransaction {
+		dbs.callback(err == nil)
+	}
+	return
 }
 
-func (dbs *Session) Find(data interface{}, opts ...QueryOption) error {
+func (dbs *Session) Find(data interface{}, opts ...QueryOption) (err error) {
 	if dbs.autoClose {
 		defer dbs.Close()
 	}
-	dbs.orig = attachOption(dbs.orig, opts...)
-	return dbs.orig.Find(data)
+	attachOption(dbs, opts...)
+	err = dbs.orig.Find(data)
+	if !dbs.inTransaction {
+		dbs.callback(err == nil)
+	}
+	return
 }
 
-func (dbs *Session) Exist(data interface{}, opts ...QueryOption) (bool, error) {
+func (dbs *Session) Exist(data interface{}, opts ...QueryOption) (exist bool, err error) {
 	if dbs.autoClose {
 		defer dbs.Close()
 	}
-	dbs.orig = attachOption(dbs.orig, opts...)
-	return dbs.orig.Exist(data)
+	attachOption(dbs, opts...)
+	exist, err = dbs.orig.Exist(data)
+	if !dbs.inTransaction {
+		dbs.callback(err == nil)
+	}
+	return
 }
 
-func (dbs *Session) Count(data interface{}, opts ...QueryOption) (int64, error) {
+func (dbs *Session) Count(data interface{}, opts ...QueryOption) (count int64, err error) {
 	if dbs.autoClose {
 		defer dbs.Close()
 	}
-	dbs.orig = attachOption(dbs.orig, opts...)
-	return dbs.orig.Count(data)
+	attachOption(dbs, opts...)
+	count, err = dbs.orig.Count(data)
+	if !dbs.inTransaction {
+		dbs.callback(err == nil)
+	}
+	return
 }
 
 func (dbs *Session) Close() {
@@ -139,40 +168,44 @@ func (dbs *Session) Close() {
 }
 
 func (dbs *Session) Begin() error {
+	if dbs.inTransaction {
+		return nil
+	}
 	dbs.inTransaction = true
 	return dbs.orig.Begin()
 }
 
-/*func (dbs *Session) EndTransaction(commit bool) error {
-	if commit {
-		return dbs.Commit()
-	}
-	return dbs.Rollback()
-}*/
-
 func (dbs *Session) Commit() error {
-	dbs.inTransaction = false
-	if err := dbs.orig.Commit(); err != nil {
-		return err
+	if dbs.inTransaction {
+		dbs.inTransaction = false
+		if err := dbs.orig.Commit(); err != nil {
+			return err
+		}
+		dbs.callback(true)
 	}
-	dbs.callback(true)
 	return nil
 }
 
 func (dbs *Session) Rollback() error {
-	dbs.inTransaction = false
-	if err := dbs.orig.Rollback(); err != nil {
-		return err
+	if dbs.inTransaction {
+		dbs.inTransaction = false
+		if err := dbs.orig.Rollback(); err != nil {
+			return err
+		}
+		dbs.callback(false)
 	}
-	dbs.callback(false)
 	return nil
 }
 
-func (dbs *Session) Exec(sqlOrArgs ...interface{}) (sql.Result, error) {
+func (dbs *Session) Exec(sqlOrArgs ...interface{}) (result sql.Result, err error) {
 	if dbs.autoClose {
 		defer dbs.Close()
 	}
-	return dbs.orig.Exec(sqlOrArgs...)
+	result, err = dbs.orig.Exec(sqlOrArgs...)
+	if !dbs.inTransaction {
+		dbs.callback(err == nil)
+	}
+	return
 }
 
 func (dbs *Session) callback(commit bool) {
