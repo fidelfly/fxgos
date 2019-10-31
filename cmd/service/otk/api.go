@@ -79,7 +79,7 @@ func update(input updateInput) (int64, error) {
 	if input.Data == nil {
 		return 0, errors.New("data is empty")
 	}
-	opts := make([]db.QueryOption, 0)
+	opts := make([]db.StatementOption, 0)
 
 	if input.Id > 0 {
 		opts = append(opts, db.ID(input.Id))

@@ -19,7 +19,7 @@ func UpdateUser(ctx context.Context, fields ...string) dbo.UpdateOption {
 	if strx.IndexOfSlice(fields, "UpdateUser") < 0 {
 		fields = append(fields, "UpdateUser")
 	}
-	return dbo.FuncUpdateOption(func(target interface{}) []db.QueryOption {
+	return dbo.FuncUpdateOption(func(target interface{}) []db.StatementOption {
 		pairs := make([]reflectx.FV, len(fields))
 		for i, f := range fields {
 			pairs[i] = reflectx.FV{
@@ -33,7 +33,7 @@ func UpdateUser(ctx context.Context, fields ...string) dbo.UpdateOption {
 			for i, v := range fields {
 				cols[i] = strx.UnderscoreString(v)
 			}
-			return []db.QueryOption{db.Cols(cols...)}
+			return []db.StatementOption{db.Cols(cols...)}
 		}
 		return nil
 	})

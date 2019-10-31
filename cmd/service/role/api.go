@@ -31,7 +31,7 @@ func Create(ctx context.Context, input interface{}) (*res.Role, error) {
 
 	err := dbo.Create(ctx,
 		dbo.ApplyBeanOption(role, dbo.Assignment(input), mdbo.CreateUser(ctx)),
-		mdbo.PubResourceEvent(ResourceType, pub.ResourceCreate),
+		mdbo.ResourceEventHook(ResourceType, pub.ResourceCreate),
 	)
 	return role, err
 }
@@ -51,7 +51,7 @@ func Update(ctx context.Context, info dbo.UpdateInfo) error {
 	opts := dbo.ApplytUpdateOption(role, info, mdbo.UpdateUser(ctx))
 
 	if rows, err := dbo.Update(ctx, role, opts,
-		mdbo.PubResourceEvent(ResourceType, pub.ResourceUpdate)); err != nil {
+		mdbo.ResourceEventHook(ResourceType, pub.ResourceUpdate)); err != nil {
 		return syserr.DatabaseErr(err)
 	} else if rows == 0 {
 		return syserr.ErrNotFound
@@ -105,7 +105,7 @@ func Delete(ctx context.Context, id int64) error {
 	}
 
 	if count, err := dbo.Delete(ctx, resRole, nil,
-		mdbo.PubResourceEvent(ResourceType, pub.ResourceDelete)); err != nil {
+		mdbo.ResourceEventHook(ResourceType, pub.ResourceDelete)); err != nil {
 		return syserr.DatabaseErr(err)
 	} else if count == 0 {
 		return syserr.ErrNotFound
@@ -117,7 +117,7 @@ func Delete(ctx context.Context, id int64) error {
 func List(ctx context.Context, input *dbo.ListInfo, conds ...string) ([]*res.Role, int64, error) {
 	resRoles := make([]*res.Role, 0)
 
-	count, err := dbo.List(ctx, resRoles, input, db.Condition(conds...))
+	count, err := dbo.List(ctx, &resRoles, input, db.Condition(conds...))
 
 	if err != nil {
 		return nil, 0, err

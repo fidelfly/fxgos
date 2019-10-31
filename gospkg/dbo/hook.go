@@ -7,33 +7,34 @@ import (
 )
 
 type SessionHook interface {
-	//Option(ctx context.Context, dbs *db.Session) //todo should remove???
+	Option(ctx context.Context, dbs *db.Session) //todo should remove???
 	Before(ctx context.Context, bean interface{})
 	After(ctx context.Context, bean interface{})
 }
 
-/*type sessionOption struct {
-	opts []db.SessionOption
+type smOption struct {
+	opts []db.StatementOption
 }
 
-func (so *sessionOption) Option(ctx context.Context, dbs *db.Session) {
+func (so *smOption) Option(ctx context.Context, dbs *db.Session) {
 	if len(so.opts) > 0 {
 		for _, opt := range so.opts {
 			opt(dbs)
 		}
 	}
 }
-func (so *sessionOption) Before(ctx context.Context, bean interface{}) {
+func (so *smOption) Before(ctx context.Context, bean interface{}) {
 }
-func (so *sessionOption) After(ctx context.Context, bean interface{}) {
+func (so *smOption) After(ctx context.Context, bean interface{}) {
 }
-
-func WithSessionOption(opts ...db.SessionOption) SessionHook {
-	return &sessionOption{opts: opts}
-}*/
+func WithStatementOption(opts ...db.StatementOption) SessionHook {
+	return &smOption{opts: opts}
+}
 
 type sessionBefore func(ctx context.Context, bean interface{})
 
+func (sb sessionBefore) Option(ctx context.Context, dbs *db.Session) {
+}
 func (sb sessionBefore) Before(ctx context.Context, bean interface{}) {
 	sb(ctx, bean)
 }
@@ -46,6 +47,8 @@ func SessionBefore(f func(ctx context.Context, bean interface{})) SessionHook {
 
 type sessionAfter func(ctx context.Context, bean interface{})
 
+func (sa sessionAfter) Option(ctx context.Context, dbs *db.Session) {
+}
 func (sa sessionAfter) Before(ctx context.Context, bean interface{}) {
 }
 func (sa sessionAfter) After(ctx context.Context, bean interface{}) {
@@ -58,6 +61,10 @@ func SessionAfter(f func(ctx context.Context, bean interface{})) SessionHook {
 
 func applyHooks(ctx context.Context, dbs *db.Session, hooks ...SessionHook) {
 	if len(hooks) > 0 {
+		for _, hook := range hooks {
+			hook.Option(ctx, dbs)
+		}
+
 		beforeAction := func(bean interface{}) {
 			for _, hook := range hooks {
 				hook.Before(ctx, bean)

@@ -35,7 +35,7 @@ func Create(ctx context.Context, input interface{}) (user *res.User, err error) 
 					user.Password = auth.EncodePassword(user.Code, user.Password)
 				}
 			})),
-		mdbo.PubResourceEvent(ResourceType, pub.ResourceCreate),
+		mdbo.ResourceEventHook(ResourceType, pub.ResourceCreate),
 	)
 	return
 }
@@ -88,7 +88,7 @@ func Update(ctx context.Context, info dbo.UpdateInfo) error {
 		}
 	}
 	if _, err := dbo.Update(ctx, user, opts,
-		mdbo.PubResourceEvent(ResourceType, pub.ResourceUpdate),
+		mdbo.ResourceEventHook(ResourceType, pub.ResourceUpdate),
 		dbo.SessionAfter(func(ctx context.Context, bean interface{}) {
 			if roleChange {
 				pub.Publish(nil, pub.TopicRoleUpdate) //todo add real role update
@@ -155,8 +155,8 @@ func Delete(ctx context.Context, id int64) error {
 	if resUser.Status != StatusDeleted {
 		resUser.Status = StatusDeleted
 		if _, err := dbo.Update(ctx, resUser,
-			[]db.QueryOption{db.ID(id), db.Cols("status")},
-			mdbo.PubResourceEvent(ResourceType, pub.ResourceDelete),
+			[]db.StatementOption{db.ID(id), db.Cols("status")},
+			mdbo.ResourceEventHook(ResourceType, pub.ResourceDelete),
 		); err != nil {
 			return syserr.DatabaseErr(err)
 		}

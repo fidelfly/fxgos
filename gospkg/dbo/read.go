@@ -9,19 +9,19 @@ import (
 )
 
 type QueryOption interface {
-	Apply() []db.QueryOption
+	Apply() []db.StatementOption
 }
 
-type FuncQueryOption func() []db.QueryOption
+type FuncQueryOption func() []db.StatementOption
 
-func (fqo FuncQueryOption) Apply() []db.QueryOption {
+func (fqo FuncQueryOption) Apply() []db.StatementOption {
 	return fqo()
 }
 
-type DirectQuery []db.QueryOption
+type DirectQuery []db.StatementOption
 
-func (dq DirectQuery) Apply() []db.QueryOption {
-	return []db.QueryOption(dq)
+func (dq DirectQuery) Apply() []db.StatementOption {
+	return []db.StatementOption(dq)
 }
 
 type ListInfo struct {
@@ -31,8 +31,8 @@ type ListInfo struct {
 	SortOrder string
 }
 
-func (info ListInfo) Apply() []db.QueryOption {
-	opts := make([]db.QueryOption, 0)
+func (info ListInfo) Apply() []db.StatementOption {
+	opts := make([]db.StatementOption, 0)
 	results := info.Results
 	page := info.Page
 	sortField := info.SortField
@@ -54,13 +54,13 @@ func (info ListInfo) Apply() []db.QueryOption {
 	return opts
 }
 
-func Read(ctx context.Context, target interface{}, option ...db.QueryOption) (bool, error) {
+func Read(ctx context.Context, target interface{}, option ...db.StatementOption) (bool, error) {
 	dbs := CurrentDBSession(ctx, db.AutoClose(true))
 	return dbs.Get(target, option...)
 }
 
-func ApplyQueryOption(option ...QueryOption) []db.QueryOption {
-	options := make([]db.QueryOption, 0)
+func ApplyQueryOption(option ...QueryOption) []db.StatementOption {
+	options := make([]db.StatementOption, 0)
 	for _, opt := range option {
 		if opt != nil {
 			if qos := opt.Apply(); len(qos) > 0 {
@@ -71,18 +71,19 @@ func ApplyQueryOption(option ...QueryOption) []db.QueryOption {
 	return options
 }
 
-func List(ctx context.Context, target interface{}, info *ListInfo, option ...db.QueryOption) (int64, error) {
-	if reflect.TypeOf(target).Kind() != reflect.Slice {
+func List(ctx context.Context, target interface{}, info *ListInfo, option ...db.StatementOption) (int64, error) {
+	targetValue := reflect.Indirect(reflect.ValueOf(target))
+	if targetValue.Kind() != reflect.Slice {
 		return 0, errors.New("target is not a slice")
 	}
 	dbs := CurrentDBSession(ctx, db.AutoClose(true))
 	if err := dbs.Find(target, ApplyQueryOption(DirectQuery(option), info)...); err != nil {
 		return 0, err
 	}
-	count := reflect.ValueOf(target).Len()
+	count := targetValue.Len()
 	if info != nil {
 		if !(count < info.Results && info.Page == 1) {
-			typ := reflect.TypeOf(target).Elem()
+			typ := targetValue.Type().Elem()
 			if typ.Kind() == reflect.Ptr {
 				typ = typ.Elem()
 			}
@@ -99,7 +100,7 @@ func List(ctx context.Context, target interface{}, info *ListInfo, option ...db.
 	return int64(count), nil
 }
 
-func Find(ctx context.Context, target interface{}, option ...db.QueryOption) error {
+func Find(ctx context.Context, target interface{}, option ...db.StatementOption) error {
 	if reflect.TypeOf(target).Kind() != reflect.Slice {
 		return errors.New("target is not a slice")
 	}
@@ -107,12 +108,12 @@ func Find(ctx context.Context, target interface{}, option ...db.QueryOption) err
 	return dbs.Find(target, option...)
 }
 
-func Exist(ctx context.Context, target interface{}, option ...db.QueryOption) (bool, error) {
+func Exist(ctx context.Context, target interface{}, option ...db.StatementOption) (bool, error) {
 	dbs := CurrentDBSession(ctx, db.AutoClose(true))
 	return dbs.Exist(target, option...)
 }
 
-func Count(ctx context.Context, target interface{}, option ...db.QueryOption) (int64, error) {
+func Count(ctx context.Context, target interface{}, option ...db.StatementOption) (int64, error) {
 	dbs := CurrentDBSession(ctx, db.AutoClose(true))
 	return dbs.Count(target, option...)
 }

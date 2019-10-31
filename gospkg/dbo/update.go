@@ -10,17 +10,17 @@ import (
 )
 
 type UpdateOption interface {
-	Apply(interface{}) []db.QueryOption
+	Apply(interface{}) []db.StatementOption
 }
 
-type FuncUpdateOption func(target interface{}) []db.QueryOption
+type FuncUpdateOption func(target interface{}) []db.StatementOption
 
-func (fuo FuncUpdateOption) Apply(target interface{}) []db.QueryOption {
+func (fuo FuncUpdateOption) Apply(target interface{}) []db.StatementOption {
 	return fuo(target)
 }
 
-func ApplytUpdateOption(target interface{}, option ...UpdateOption) []db.QueryOption {
-	queryOption := make([]db.QueryOption, 0)
+func ApplytUpdateOption(target interface{}, option ...UpdateOption) []db.StatementOption {
+	queryOption := make([]db.StatementOption, 0)
 	for _, opt := range option {
 		if qopt := opt.Apply(target); len(qopt) > 0 {
 			queryOption = append(queryOption, qopt...)
@@ -30,14 +30,14 @@ func ApplytUpdateOption(target interface{}, option ...UpdateOption) []db.QueryOp
 }
 
 func UpdateField(s interface{}, fields ...string) UpdateOption {
-	return FuncUpdateOption(func(t interface{}) []db.QueryOption {
+	return FuncUpdateOption(func(t interface{}) []db.StatementOption {
 		updateFields := reflectx.CopyFields(t, s, fields...)
 		if len(updateFields) > 0 {
 			fields := make([]string, len(updateFields))
 			for i, v := range updateFields {
 				fields[i] = strx.UnderscoreString(v)
 			}
-			return []db.QueryOption{db.Cols(fields...)}
+			return []db.StatementOption{db.Cols(fields...)}
 		}
 		return nil
 	})
@@ -49,8 +49,8 @@ type UpdateInfo struct {
 	Data interface{}
 }
 
-func (info UpdateInfo) Apply(target interface{}) []db.QueryOption {
-	options := make([]db.QueryOption, 0)
+func (info UpdateInfo) Apply(target interface{}) []db.StatementOption {
+	options := make([]db.StatementOption, 0)
 	if info.Id > 0 {
 		reflectx.SetField(target, reflectx.FV{Field: "Id", Value: info.Id})
 		options = append(options, db.ID(info.Id))
@@ -71,7 +71,7 @@ func (info UpdateInfo) Apply(target interface{}) []db.QueryOption {
 	return options
 }
 
-func Update(ctx context.Context, target interface{}, option []db.QueryOption, hooks ...SessionHook) (int64, error) {
+func Update(ctx context.Context, target interface{}, option []db.StatementOption, hooks ...SessionHook) (int64, error) {
 	dbs := CurrentDBSession(ctx, db.AutoClose(true))
 	applyHooks(ctx, dbs.Session, hooks...)
 	if effectRows, err := dbs.Update(target, option...); err != nil {

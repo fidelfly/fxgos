@@ -2,12 +2,15 @@ package mdbo
 
 import (
 	"context"
+	"time"
 
 	"github.com/fidelfly/gox/pkg/reflectx"
 	"github.com/fidelfly/gox/pkg/strx"
 
 	"github.com/fidelfly/fxgos/cmd/utilities/mctx"
 	"github.com/fidelfly/gostool/dbo"
+
+	"github.com/fidelfly/gox/pkg/datex"
 )
 
 func CreateUser(ctx context.Context, fields ...string) dbo.BeanOption {
@@ -30,5 +33,35 @@ func CreateUser(ctx context.Context, fields ...string) dbo.BeanOption {
 			}
 		}
 		reflectx.SetField(target, pairs...)
+	})
+}
+
+func ToDayStart(fields ...string) dbo.BeanOption {
+	return dbo.FuncBeanOption(func(target interface{}) {
+		for _, field := range fields {
+			if v := reflectx.GetField(target, field); v != nil {
+				if t, ok := v.(time.Time); ok {
+					reflectx.SetField(target, reflectx.FV{
+						Field: field,
+						Value: datex.DateStart(t),
+					})
+				}
+			}
+		}
+	})
+}
+
+func ToDayEnd(fields ...string) dbo.BeanOption {
+	return dbo.FuncBeanOption(func(target interface{}) {
+		for _, field := range fields {
+			if v := reflectx.GetField(target, field); v != nil {
+				if t, ok := v.(time.Time); ok {
+					reflectx.SetField(target, reflectx.FV{
+						Field: field,
+						Value: datex.DateEnd(t),
+					})
+				}
+			}
+		}
 	})
 }

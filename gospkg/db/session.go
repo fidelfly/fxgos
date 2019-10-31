@@ -71,11 +71,12 @@ func (dbs *Session) GetXorm() *xorm.Session {
 	return dbs.orig
 }
 
+/*
 func (dbs *Session) NoAutoTime() {
 	dbs.orig.NoAutoTime()
-}
+}*/
 
-func (dbs *Session) Insert(data interface{}, opts ...QueryOption) (affected int64, err error) {
+func (dbs *Session) Insert(data interface{}, opts ...StatementOption) (affected int64, err error) {
 	if dbs.autoClose {
 		defer dbs.Close()
 	}
@@ -88,7 +89,7 @@ func (dbs *Session) Insert(data interface{}, opts ...QueryOption) (affected int6
 	return
 }
 
-func (dbs *Session) Update(data interface{}, opts ...QueryOption) (affected int64, err error) {
+func (dbs *Session) Update(data interface{}, opts ...StatementOption) (affected int64, err error) {
 	if dbs.autoClose {
 		defer dbs.Close()
 	}
@@ -100,7 +101,7 @@ func (dbs *Session) Update(data interface{}, opts ...QueryOption) (affected int6
 	return
 }
 
-func (dbs *Session) Get(data interface{}, opts ...QueryOption) (affected bool, err error) {
+func (dbs *Session) Get(data interface{}, opts ...StatementOption) (affected bool, err error) {
 	if dbs.autoClose {
 		defer dbs.Close()
 	}
@@ -112,7 +113,7 @@ func (dbs *Session) Get(data interface{}, opts ...QueryOption) (affected bool, e
 	return
 }
 
-func (dbs *Session) Delete(data interface{}, opts ...QueryOption) (affected int64, err error) {
+func (dbs *Session) Delete(data interface{}, opts ...StatementOption) (affected int64, err error) {
 	if dbs.autoClose {
 		defer dbs.Close()
 	}
@@ -124,7 +125,7 @@ func (dbs *Session) Delete(data interface{}, opts ...QueryOption) (affected int6
 	return
 }
 
-func (dbs *Session) Find(data interface{}, opts ...QueryOption) (err error) {
+func (dbs *Session) Find(data interface{}, opts ...StatementOption) (err error) {
 	if dbs.autoClose {
 		defer dbs.Close()
 	}
@@ -136,7 +137,7 @@ func (dbs *Session) Find(data interface{}, opts ...QueryOption) (err error) {
 	return
 }
 
-func (dbs *Session) Exist(data interface{}, opts ...QueryOption) (exist bool, err error) {
+func (dbs *Session) Exist(data interface{}, opts ...StatementOption) (exist bool, err error) {
 	if dbs.autoClose {
 		defer dbs.Close()
 	}
@@ -148,7 +149,7 @@ func (dbs *Session) Exist(data interface{}, opts ...QueryOption) (exist bool, er
 	return
 }
 
-func (dbs *Session) Count(data interface{}, opts ...QueryOption) (count int64, err error) {
+func (dbs *Session) Count(data interface{}, opts ...StatementOption) (count int64, err error) {
 	if dbs.autoClose {
 		defer dbs.Close()
 	}
