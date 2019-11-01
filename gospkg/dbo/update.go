@@ -71,9 +71,8 @@ func (info UpdateInfo) Apply(target interface{}) []db.StatementOption {
 	return options
 }
 
-func Update(ctx context.Context, target interface{}, option []db.StatementOption, hooks ...SessionHook) (int64, error) {
+func Update(ctx context.Context, target interface{}, option ...db.StatementOption) (int64, error) {
 	dbs := CurrentDBSession(ctx, db.AutoClose(true))
-	applyHooks(ctx, dbs.Session, hooks...)
 	if effectRows, err := dbs.Update(target, option...); err != nil {
 		return 0, err
 	} else {

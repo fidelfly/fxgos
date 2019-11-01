@@ -85,7 +85,7 @@ func update(input dbo.UpdateInfo) error {
 	}
 	opts := dbo.ApplytUpdateOption(otk, input)
 
-	if rows, err := dbo.Update(context.Background(), otk, opts); err != nil {
+	if rows, err := dbo.Update(context.Background(), otk, opts...); err != nil {
 		return syserr.DatabaseErr(err)
 	} else if rows == 0 {
 		return syserr.ErrNotFound

@@ -84,7 +84,7 @@ func Update(ctx context.Context, info dbo.UpdateInfo) error {
 			return errors.New("user status is not deactived")
 		}
 	}
-	if _, err := dbo.Update(ctx, user, opts,
+	if _, err := dbo.Update(ctx, user, db.StatementOptionChain(opts),
 		mdbo.ResourceEventHook(ResourceType, pub.ResourceUpdate),
 	); err != nil {
 		return err
@@ -148,7 +148,7 @@ func Delete(ctx context.Context, id int64) error {
 		resUser.Status = StatusDeleted
 		if _, err := dbs.Update(resUser,
 			db.ID(id), db.Cols("status"),
-			mdbo.ResourceEventOption(ResourceType, pub.ResourceDelete),
+			mdbo.ResourceEventHook(ResourceType, pub.ResourceDelete),
 		); err != nil {
 			return syserr.DatabaseErr(err)
 		}

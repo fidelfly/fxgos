@@ -53,7 +53,8 @@ func Update(ctx context.Context, info dbo.UpdateInfo) error {
 
 	opts := dbo.ApplytUpdateOption(role, info, mdbo.UpdateUser(ctx))
 
-	if rows, err := dbo.Update(ctx, role, opts,
+	if rows, err := dbo.Update(ctx, role,
+		db.StatementOptionChain(opts),
 		mdbo.ResourceEventHook(ResourceType, pub.ResourceUpdate)); err != nil {
 		return syserr.DatabaseErr(err)
 	} else if rows == 0 {
@@ -108,7 +109,7 @@ func Delete(ctx context.Context, id int64) error {
 	}
 
 	if count, err := dbs.Delete(resRole,
-		mdbo.ResourceEventOption(ResourceType, pub.ResourceDelete)); err != nil {
+		mdbo.ResourceEventHook(ResourceType, pub.ResourceDelete)); err != nil {
 		return syserr.DatabaseErr(err)
 	} else if count == 0 {
 		return syserr.ErrNotFound

@@ -10,6 +10,16 @@ func AutoClose(autoClose bool) SessionOption {
 
 type StatementOption func(session *Session)
 
+func StatementOptionChain(options []StatementOption) StatementOption {
+	return func(session *Session) {
+		for _, opt := range options {
+			if opt != nil {
+				opt(session)
+			}
+		}
+	}
+}
+
 func Cols(cols ...string) StatementOption {
 	return func(session *Session) {
 		session.GetXorm().Cols(cols...)
@@ -87,7 +97,9 @@ func WithTxCallback(callbacks ...TxCallback) StatementOption {
 func attachOption(session *Session, opts ...StatementOption) {
 	if len(opts) > 0 {
 		for _, opt := range opts {
-			opt(session)
+			if opt != nil {
+				opt(session)
+			}
 		}
 	}
 }

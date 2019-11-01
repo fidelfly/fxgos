@@ -6,10 +6,9 @@ import (
 	"github.com/fidelfly/gostool/db"
 )
 
-func Create(ctx context.Context, target interface{}, hooks ...SessionHook) error {
+func Create(ctx context.Context, target interface{}, options ...db.StatementOption) error {
 	dbs := CurrentDBSession(ctx, db.AutoClose(true))
-	applyHooks(ctx, dbs.Session, hooks...)
-	if _, err := dbs.Insert(target); err != nil {
+	if _, err := dbs.Insert(target, options...); err != nil {
 		return err
 	}
 	return nil
