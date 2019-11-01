@@ -39,13 +39,16 @@ func ApplyBeanOption(target interface{}, option ...BeanOption) interface{} {
 
 func _applyBeanOption(target interface{}, opts ...BeanOption) {
 	for _, opt := range opts {
-		opt.Apply(target)
+		if opt != nil {
+			opt.Apply(target)
+		}
+
 	}
 }
 
 func Assignment(s interface{}) BeanOption {
 	return FuncBeanOption(func(t interface{}) {
-		if t != s {
+		if s != nil && t != s {
 			reflectx.CopyAllFields(t, s)
 		}
 	})

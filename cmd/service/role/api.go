@@ -22,6 +22,9 @@ type Form struct {
 }
 
 func Create(ctx context.Context, input interface{}) (*res.Role, error) {
+	if input == nil {
+		return nil, syserr.ErrInvalidParam
+	}
 	var role *res.Role
 	if t, ok := input.(*res.Role); ok {
 		role = t
@@ -90,22 +93,22 @@ func Delete(ctx context.Context, id int64) error {
 		return syserr.ErrInvalidParam
 	}
 	resRole := &res.Role{Id: id}
-	ctx, dbs := dbo.WithDBSession(ctx, db.AutoClose(false))
+	dbs := dbo.CurrentDBSession(ctx, dbo.DefaultSession)
 	defer dbs.Close()
-	if count, err := dbo.Count(ctx, res.Role{}, db.Where("roles like ?", fmt.Sprintf("%%%d%%", id))); err != nil {
+	if count, err := dbs.Count(res.Role{}, db.Where("roles like ?", fmt.Sprintf("%%%d%%", id))); err != nil {
 		return syserr.DatabaseErr(err)
 	} else if count > 0 {
 		return errorx.NewError(syserr.CodeOfDatabaseErr, "role_used_by_role")
 	}
 
-	if count, err := dbo.Count(ctx, res2.User{}, db.Where("roles like ?", fmt.Sprintf("%%%d%%", id))); err != nil {
+	if count, err := dbs.Count(res2.User{}, db.Where("roles like ?", fmt.Sprintf("%%%d%%", id))); err != nil {
 		return syserr.DatabaseErr(err)
 	} else if count > 0 {
 		return errorx.NewError(syserr.CodeOfDatabaseErr, "role_used_by_user")
 	}
 
-	if count, err := dbo.Delete(ctx, resRole, nil,
-		mdbo.ResourceEventHook(ResourceType, pub.ResourceDelete)); err != nil {
+	if count, err := dbs.Delete(resRole,
+		mdbo.ResourceEventOption(ResourceType, pub.ResourceDelete)); err != nil {
 		return syserr.DatabaseErr(err)
 	} else if count == 0 {
 		return syserr.ErrNotFound

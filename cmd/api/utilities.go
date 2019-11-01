@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/fidelfly/gox/httprxr"
 	"github.com/fidelfly/gox/pkg/jmap"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/fidelfly/fxgos/cmd/service/iam"
 	"github.com/fidelfly/fxgos/cmd/service/user"
-	"github.com/fidelfly/gostool/db"
 	"github.com/fidelfly/gostool/dbo"
 )
 
@@ -43,7 +41,7 @@ func CheckEmptyVar(w http.ResponseWriter, r *http.Request, vars httprxr.RequestV
 	return true
 }
 
-func NewList(param httprxr.RequestVar) (*dbo.ListInfo, error) {
+func ExtractListInfo(param httprxr.RequestVar) (*dbo.ListInfo, error) {
 	info := &dbo.ListInfo{}
 	if result, err := param.GetInt("results"); err != nil {
 		return nil, err
@@ -60,18 +58,6 @@ func NewList(param httprxr.RequestVar) (*dbo.ListInfo, error) {
 	info.SortOrder = param.GetString("sortOrder")
 
 	return info, nil
-}
-
-func NewListInfo(params map[string]string, cond ...string) db.ListInfo {
-	req := db.ListInfo{}
-	req.Results, _ = strconv.ParseInt(params["results"], 10, 64)
-	req.Page, _ = strconv.ParseInt(params["page"], 10, 64)
-	req.SortField = params["sortField"]
-	req.SortOrder = params["sortOrder"]
-	if len(cond) > 0 {
-		req.Cond = cond[0]
-	}
-	return req
 }
 
 func iamProps(premises ...iam.AccessItem) routex.PropSetter {

@@ -1,6 +1,7 @@
 package otk
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,7 +12,9 @@ import (
 	"github.com/fidelfly/gox/pkg/randx"
 
 	"github.com/fidelfly/fxgos/cmd/service/otk/res"
+	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
 	"github.com/fidelfly/gostool/db"
+	"github.com/fidelfly/gostool/dbo"
 )
 
 type ResourceKey struct {
@@ -70,38 +73,32 @@ func NewOtk(keyType string, typeId string, expired time.Duration, usage string, 
 	return
 }
 
-type updateInput struct {
-	db.UpdateInfo
-	Data *res.OneTimeKey
-}
-
-func update(input updateInput) (int64, error) {
+func update(input dbo.UpdateInfo) error {
 	if input.Data == nil {
-		return 0, errors.New("data is empty")
+		return errors.New("data is empty")
 	}
-	opts := make([]db.StatementOption, 0)
+	var otk *res.OneTimeKey
+	if t, ok := input.Data.(*res.OneTimeKey); ok {
+		otk = t
+	} else {
+		otk = new(res.OneTimeKey)
+	}
+	opts := dbo.ApplytUpdateOption(otk, input)
 
-	if input.Id > 0 {
-		opts = append(opts, db.ID(input.Id))
+	if rows, err := dbo.Update(context.Background(), otk, opts); err != nil {
+		return syserr.DatabaseErr(err)
+	} else if rows == 0 {
+		return syserr.ErrNotFound
 	}
-	if len(input.Cols) > 0 {
-		opts = append(opts, db.Cols(input.Cols...))
-	}
-
-	if rows, err := db.Update(input.Data, opts...); err != nil {
-		return 0, err
-	} else if rows > 0 {
-		return input.Data.Id, nil
-	}
-	return 0, nil
+	return nil
 }
 
 func Consume(id int64) error {
-	_, err := update(updateInput{
-		UpdateInfo: db.UpdateInfo{Id: id, Cols: []string{"consumed"}},
-		Data:       &res.OneTimeKey{Id: id, Consumed: true},
+	return update(dbo.UpdateInfo{
+		Id:   id,
+		Cols: []string{"consumed"},
+		Data: &res.OneTimeKey{Id: id, Consumed: true},
 	})
-	return err
 }
 
 func Validate(key string) (*res.OneTimeKey, error) {

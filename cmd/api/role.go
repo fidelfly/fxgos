@@ -54,7 +54,7 @@ func listPolicy(w http.ResponseWriter, r *http.Request) {
 
 func listRole(w http.ResponseWriter, r *http.Request) {
 	params := httprxr.ParseRequestVars(r, "results", "page", "sortField", "sortOrder")
-	if listInfo, err := NewList(params); err != nil {
+	if listInfo, err := ExtractListInfo(params); err != nil {
 		httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.ExceptionMessage(err))
 		return
 	} else {

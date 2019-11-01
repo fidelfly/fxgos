@@ -20,6 +20,10 @@ func New() *res.User {
 }
 
 func Create(ctx context.Context, input interface{}) (user *res.User, err error) {
+	if input == nil {
+		return nil, syserr.ErrInvalidParam
+	}
+
 	if t, ok := input.(*res.User); ok {
 		user = t
 	} else {
@@ -40,16 +44,11 @@ func Create(ctx context.Context, input interface{}) (user *res.User, err error) 
 	return
 }
 
-type UpdateInput struct {
-	db.UpdateInfo
-	Data *res.User
-}
-
 func Update(ctx context.Context, info dbo.UpdateInfo) error {
 	if info.Data == nil {
 		return syserr.ErrInvalidParam
 	}
-	ctx, dbs := dbo.WithDBSession(ctx, db.AutoClose(false))
+	ctx, dbs := dbo.WithDBSession(ctx, dbo.DefaultSession)
 	defer dbs.Close()
 	var user *res.User
 	if t, ok := info.Data.(*res.User); ok {
@@ -61,19 +60,17 @@ func Update(ctx context.Context, info dbo.UpdateInfo) error {
 	opts := dbo.ApplytUpdateOption(user, info, mdbo.UpdateUser(ctx))
 
 	id := user.Id
-	pwdChange := len(user.Password) > 0
-	roleChange := false
-	statusChange := false
-
-	if len(info.Cols) > 0 {
-		pwdChange = strx.IndexOfSlice(info.Cols, "password") >= 0
-		roleChange = strx.IndexOfSlice(info.Cols, "role_id") >= 0
-		statusChange = strx.IndexOfSlice(info.Cols, "status") >= 0
-	}
-
 	resUser, err := Read(ctx, id)
 	if err != nil {
 		return err
+	}
+
+	pwdChange := len(user.Password) > 0
+	statusChange := user.Status != resUser.Status
+
+	if len(info.Cols) > 0 {
+		pwdChange = strx.IndexOfSlice(info.Cols, "password") >= 0
+		statusChange = strx.IndexOfSlice(info.Cols, "status") >= 0
 	}
 
 	if pwdChange {
@@ -89,11 +86,6 @@ func Update(ctx context.Context, info dbo.UpdateInfo) error {
 	}
 	if _, err := dbo.Update(ctx, user, opts,
 		mdbo.ResourceEventHook(ResourceType, pub.ResourceUpdate),
-		dbo.SessionAfter(func(ctx context.Context, bean interface{}) {
-			if roleChange {
-				pub.Publish(nil, pub.TopicRoleUpdate) //todo add real role update
-			}
-		}),
 	); err != nil {
 		return err
 	}
@@ -145,18 +137,18 @@ func Delete(ctx context.Context, id int64) error {
 		return syserr.ErrInvalidParam
 	}
 	resUser := &res.User{Id: id}
-	ctx, dbs := dbo.WithDBSession(ctx, db.AutoClose(false))
+	dbs := dbo.CurrentDBSession(ctx, dbo.DefaultSession)
 	defer dbs.Close()
-	if find, err := dbo.Read(ctx, resUser); err != nil {
+	if find, err := dbs.Get(resUser); err != nil {
 		return syserr.DatabaseErr(err)
 	} else if !find {
 		return syserr.ErrNotFound
 	}
 	if resUser.Status != StatusDeleted {
 		resUser.Status = StatusDeleted
-		if _, err := dbo.Update(ctx, resUser,
-			[]db.StatementOption{db.ID(id), db.Cols("status")},
-			mdbo.ResourceEventHook(ResourceType, pub.ResourceDelete),
+		if _, err := dbs.Update(resUser,
+			db.ID(id), db.Cols("status"),
+			mdbo.ResourceEventOption(ResourceType, pub.ResourceDelete),
 		); err != nil {
 			return syserr.DatabaseErr(err)
 		}
@@ -190,7 +182,7 @@ func Validate(ctx context.Context, input ValidateInput) (*res.User, error) {
 func List(ctx context.Context, input *dbo.ListInfo, conds ...string) (results []*res.User, count int64, err error) {
 	results = make([]*res.User, 0)
 
-	count, err = dbo.List(ctx, results, input, db.Condition(conds...))
+	count, err = dbo.List(ctx, &results, input, db.Condition(conds...))
 
 	if err != nil {
 		return nil, 0, err

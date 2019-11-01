@@ -271,7 +271,7 @@ func listUser(w http.ResponseWriter, r *http.Request) {
 		httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.ExceptionMessage(err))
 		return
 	}
-	listInfo, err := NewList(params)
+	listInfo, err := ExtractListInfo(params)
 	if err != nil {
 		httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.ExceptionMessage(err))
 		return
