@@ -81,7 +81,7 @@ func List(ctx context.Context, target interface{}, info *ListInfo, option ...db.
 		return 0, err
 	}
 	count := targetValue.Len()
-	if info != nil {
+	if info != nil && info.Results > 0 {
 		if !(count < info.Results && info.Page == 1) {
 			typ := targetValue.Type().Elem()
 			if typ.Kind() == reflect.Ptr {

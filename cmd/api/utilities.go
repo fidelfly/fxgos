@@ -42,16 +42,21 @@ func CheckEmptyVar(w http.ResponseWriter, r *http.Request, vars httprxr.RequestV
 }
 
 func ExtractListInfo(param httprxr.RequestVar) (*dbo.ListInfo, error) {
-	info := &dbo.ListInfo{}
+	if !param.Exist("results") {
+		return nil, nil
+	}
+	info := &dbo.ListInfo{Page: 1}
 	if result, err := param.GetInt("results"); err != nil {
 		return nil, err
 	} else {
 		info.Results = int(result)
 	}
-	if page, err := param.GetInt("page"); err != nil {
-		return nil, err
-	} else {
-		info.Page = int(page)
+	if param.Exist("page") {
+		if page, err := param.GetInt("page"); err != nil {
+			return nil, err
+		} else {
+			info.Page = int(page)
+		}
 	}
 
 	info.SortField = param.GetString("sortField")

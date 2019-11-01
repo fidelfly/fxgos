@@ -67,8 +67,12 @@ func NewSession(opts ...SessionOption) *Session {
 	return s
 }
 
-func (dbs *Session) GetXorm() *xorm.Session {
+func (dbs *Session) getXorm() *xorm.Session {
 	return dbs.orig
+}
+
+func (dbs *Session) InTransaction() bool {
+	return dbs.inTransaction
 }
 
 /*
@@ -172,8 +176,12 @@ func (dbs *Session) Begin() error {
 	if dbs.inTransaction {
 		return nil
 	}
+
+	if err := dbs.orig.Begin(); err != nil {
+		return err
+	}
 	dbs.inTransaction = true
-	return dbs.orig.Begin()
+	return nil
 }
 
 func (dbs *Session) Commit() error {
