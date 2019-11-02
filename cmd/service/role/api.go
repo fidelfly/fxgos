@@ -51,7 +51,7 @@ func Update(ctx context.Context, info dbo.UpdateInfo) error {
 		role = new(res.Role)
 	}
 
-	opts := dbo.ApplytUpdateOption(role, info, mdbo.UpdateUser(ctx))
+	opts := dbo.ApplyUpdateOption(role, info, mdbo.UpdateUser(ctx))
 
 	if rows, err := dbo.Update(ctx, role,
 		db.StatementOptionChain(opts),

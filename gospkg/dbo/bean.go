@@ -39,7 +39,7 @@ func ApplyBeanOption(target interface{}, option ...BeanOption) interface{} {
 
 func _applyBeanOption(target interface{}, opts ...BeanOption) {
 	for _, opt := range opts {
-		if opt != nil {
+		if !reflectx.IsValueNil(opt) {
 			opt.Apply(target)
 		}
 

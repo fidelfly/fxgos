@@ -57,7 +57,7 @@ func Update(ctx context.Context, info dbo.UpdateInfo) error {
 		user = new(res.User)
 	}
 
-	opts := dbo.ApplytUpdateOption(user, info, mdbo.UpdateUser(ctx))
+	opts := dbo.ApplyUpdateOption(user, info, mdbo.UpdateUser(ctx))
 
 	id := user.Id
 	resUser, err := Read(ctx, id)

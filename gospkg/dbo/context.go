@@ -52,6 +52,8 @@ func (cs *CtxSession) Rollback() error {
 func (cs *CtxSession) Close() {
 	if cs.controlled {
 		cs.Session.Close()
+	} else if cs.tranOwner {
+		cs.Rollback()
 	}
 }
 

@@ -19,11 +19,13 @@ func (fuo FuncUpdateOption) Apply(target interface{}) []db.StatementOption {
 	return fuo(target)
 }
 
-func ApplytUpdateOption(target interface{}, option ...UpdateOption) []db.StatementOption {
+func ApplyUpdateOption(target interface{}, option ...UpdateOption) []db.StatementOption {
 	queryOption := make([]db.StatementOption, 0)
 	for _, opt := range option {
-		if qopt := opt.Apply(target); len(qopt) > 0 {
-			queryOption = append(queryOption, qopt...)
+		if !reflectx.IsValueNil(opt) {
+			if qopt := opt.Apply(target); len(qopt) > 0 {
+				queryOption = append(queryOption, qopt...)
+			}
 		}
 	}
 	return queryOption
