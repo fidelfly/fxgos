@@ -12,79 +12,85 @@ type StatementOption func(session *Session)
 
 func StatementOptionChain(options []StatementOption) StatementOption {
 	return func(session *Session) {
-		for _, opt := range options {
-			if opt != nil {
-				opt(session)
+		if options != nil {
+			for _, opt := range options {
+				if opt != nil {
+					opt(session)
+				}
 			}
 		}
 	}
 }
 
+func DynamicOption(df func() []StatementOption) StatementOption {
+	return StatementOptionChain(df())
+}
+
 func Cols(cols ...string) StatementOption {
 	return func(session *Session) {
-		session.GetXorm().Cols(cols...)
+		session.getXorm().Cols(cols...)
 	}
 }
 
 func Table(name string) StatementOption {
 	return func(session *Session) {
-		session.GetXorm().Table(name)
+		session.getXorm().Table(name)
 	}
 }
 
 func ID(id interface{}) StatementOption {
 	return func(session *Session) {
-		session.GetXorm().ID(id)
+		session.getXorm().ID(id)
 	}
 }
 
 func Where(query interface{}, args ...interface{}) StatementOption {
 	return func(session *Session) {
-		session.GetXorm().Where(query, args...)
+		session.getXorm().Where(query, args...)
 	}
 }
 
 func Condition(conds ...string) StatementOption {
 	return func(session *Session) {
 		for _, cond := range conds {
-			session.GetXorm().And(cond)
+			session.getXorm().And(cond)
 		}
 	}
 }
 
 func Limit(limit int, start ...int) StatementOption {
 	return func(session *Session) {
-		session.GetXorm().Limit(limit, start...)
+		session.getXorm().Limit(limit, start...)
 	}
 }
 
 func Asc(colNames ...string) StatementOption {
 	return func(session *Session) {
-		session.GetXorm().Asc(colNames...)
+		session.getXorm().Asc(colNames...)
 	}
 }
 
 func Desc(colNames ...string) StatementOption {
 	return func(session *Session) {
-		session.GetXorm().Desc(colNames...)
+		session.getXorm().Desc(colNames...)
 	}
 }
 
 func NoAutoTime() StatementOption {
 	return func(session *Session) {
-		session.GetXorm().NoAutoTime()
+		session.getXorm().NoAutoTime()
 	}
 }
 
 func AfterClosure(closure func(interface{})) StatementOption {
 	return func(session *Session) {
-		session.GetXorm().After(closure)
+		session.getXorm().After(closure)
 	}
 }
 
 func BeforeClosure(closure func(interface{})) StatementOption {
 	return func(session *Session) {
-		session.GetXorm().Before(closure)
+		session.getXorm().Before(closure)
 	}
 }
 

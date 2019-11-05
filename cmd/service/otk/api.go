@@ -83,7 +83,7 @@ func update(input dbo.UpdateInfo) error {
 	} else {
 		otk = new(res.OneTimeKey)
 	}
-	opts := dbo.ApplytUpdateOption(otk, input)
+	opts := dbo.ApplyUpdateOption(otk, input)
 
 	if rows, err := dbo.Update(context.Background(), otk, opts...); err != nil {
 		return syserr.DatabaseErr(err)

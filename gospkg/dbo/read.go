@@ -5,6 +5,8 @@ import (
 	"errors"
 	"reflect"
 
+	"github.com/fidelfly/gox/pkg/reflectx"
+
 	"github.com/fidelfly/gostool/db"
 )
 
@@ -62,7 +64,7 @@ func Read(ctx context.Context, target interface{}, option ...db.StatementOption)
 func ApplyQueryOption(option ...QueryOption) []db.StatementOption {
 	options := make([]db.StatementOption, 0)
 	for _, opt := range option {
-		if opt != nil {
+		if !reflectx.IsValueNil(opt) {
 			if qos := opt.Apply(); len(qos) > 0 {
 				options = append(options, qos...)
 			}
@@ -81,7 +83,7 @@ func List(ctx context.Context, target interface{}, info *ListInfo, option ...db.
 		return 0, err
 	}
 	count := targetValue.Len()
-	if info != nil {
+	if info != nil && info.Results > 0 {
 		if !(count < info.Results && info.Page == 1) {
 			typ := targetValue.Type().Elem()
 			if typ.Kind() == reflect.Ptr {

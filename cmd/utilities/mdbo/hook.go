@@ -16,7 +16,7 @@ func ResourceEventHook(resourceType string, action int) db.StatementOption {
 	})
 }
 
-func ResourceEventOption(resourceType string, action int) db.StatementOption {
+/*func ResourceEventOption(resourceType string, action int) db.StatementOption {
 	return db.AfterClosure(func(bean interface{}) {
 		pub.Publish(pub.ResourceEvent{
 			Type:   resourceType,
@@ -25,4 +25,4 @@ func ResourceEventOption(resourceType string, action int) db.StatementOption {
 			Code:   getCode(bean),
 		}, pub.TopicResource)
 	})
-}
+}*/
