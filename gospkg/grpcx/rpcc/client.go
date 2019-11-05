@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/fidelfly/gox/pkg/ctxx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -20,10 +21,18 @@ func NewConn(address string, timeout time.Duration, authKey string) (*Connection
 	return &Connection{conn}, nil
 }
 
-func clientInterceptor(timeout time.Duration, authKey string) grpc.UnaryClientInterceptor {
+func clientInterceptor(defaultTimeout time.Duration, authKey string) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		if len(authKey) > 0 {
 			ctx = metadata.AppendToOutgoingContext(ctx, "authorization", authKey)
+		}
+		timeout := defaultTimeout
+		if md := ctxx.GetMetadata(ctx); md != nil {
+			if v, ok := md.Get("rpc.timeout"); ok {
+				if newTimeout, ok := v.(time.Duration); ok {
+					timeout = newTimeout
+				}
+			}
 		}
 		ctx, cancel := context.WithTimeout(ctx, timeout)
 		defer cancel()
@@ -44,4 +53,11 @@ func (sa SimpleAuthKey) GetRequestMetadata(ctx context.Context, uri ...string) (
 
 func (sa SimpleAuthKey) RequireTransportSecurity() bool {
 	return true
+}
+
+func WithTimeout(ctx context.Context, timeout time.Duration) context.Context {
+	return ctxx.WithMetadata(ctx, map[interface{}]interface{}{
+		"rpc.timeout": timeout,
+	})
+	//return context.WithValue(ctx, "rpc.timeout", timeout)
 }

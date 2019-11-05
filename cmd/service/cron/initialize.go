@@ -3,6 +3,7 @@ package cron
 import (
 	"context"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/fidelfly/gox/cronx"
@@ -16,6 +17,8 @@ import (
 var myCronx = cronx.New(cronx.WithMiddleware(logJob))
 
 var jobMap = make(map[string]cronx.Job)
+var runningJobs = make(map[int64]int)
+var runningLock = sync.RWMutex{}
 
 func Initialize() error {
 	err := db.Synchronize(
@@ -72,10 +75,36 @@ func logJob(job cronx.Job) cronx.Job {
 					Status: JobExpired,
 				}, db.ID(id), db.Cols("status")))
 			}
+			removeRunningJob(id)
 		}
 		logx.CaptureError(dbs.Insert(audit))
 		return
 	})
+}
+
+func addRunningJob(resId int64, jobId int) {
+	runningLock.Lock()
+	defer runningLock.Unlock()
+
+	runningJobs[resId] = jobId
+}
+
+func removeRunningJob(resId int64) {
+	runningLock.Lock()
+	defer runningLock.Unlock()
+
+	delete(runningJobs, resId)
+}
+
+func getRunningJob(resId int64) (int, bool) {
+	runningLock.RLock()
+	defer runningLock.RUnlock()
+
+	if id, ok := runningJobs[resId]; ok {
+		return id, true
+	} else {
+		return 0, false
+	}
 }
 
 func GetJobId(md *cronx.Metadata) int64 {

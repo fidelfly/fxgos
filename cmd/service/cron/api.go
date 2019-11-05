@@ -102,18 +102,25 @@ func Create(ctx context.Context, opts ...JobOption) (int64, error) {
 
 func activateJob(cronJob *res.CronJob) (int, error) {
 	if cronJob.Status == JobEffective {
+		if id, ok := getRunningJob(cronJob.Id); ok {
+			return id, nil
+		}
 		if job, ok := jobMap[cronJob.Code]; ok {
 			meta := makeMeta(cronJob)
 			meta[MetaJobRunWay] = automatic
+			var jobId int
+			var err error
 			if cronJob.Type == OneTimeJobType {
 				if cronJob.Timer.After(time.Now()) {
-					return myCronx.AddTimerJob(cronJob.Timer, job, meta), nil
+					jobId = myCronx.AddTimerJob(cronJob.Timer, job, meta)
 				} else {
-					return myCronx.AddTimerJob(time.Now().Add(2*time.Minute), job, meta), nil
+					jobId = myCronx.AddTimerJob(time.Now().Add(2*time.Minute), job, meta)
 				}
 			} else {
-				return myCronx.AddJob(cronJob.Spec, job, meta)
+				jobId, err = myCronx.AddJob(cronJob.Spec, job, meta)
 			}
+			addRunningJob(cronJob.Id, jobId)
+			return jobId, err
 		} else {
 			return 0, errorx.NewError(
 				"err.cron.job_definition_not_found",

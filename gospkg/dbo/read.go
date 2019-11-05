@@ -101,7 +101,8 @@ func List(ctx context.Context, target interface{}, info *ListInfo, option ...db.
 }
 
 func Find(ctx context.Context, target interface{}, option ...db.StatementOption) error {
-	if reflect.TypeOf(target).Kind() != reflect.Slice {
+	targetValue := reflect.Indirect(reflect.ValueOf(target))
+	if targetValue.Kind() != reflect.Slice {
 		return errors.New("target is not a slice")
 	}
 	dbs := CurrentDBSession(ctx, db.AutoClose(true))
