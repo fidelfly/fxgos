@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/fidelfly/gox/authx"
 	"github.com/fidelfly/gox/gosrvx"
@@ -28,6 +29,8 @@ func setupAuthServer(clients ...authx.AuthClient) (server *authx.Server, err err
 	}
 	server.SetClients(cps...)
 	server.SetPasswordAuthorizationHandler(passwordHandler)
+	server.SetPasswordTokenCfg(2*time.Hour, 3*time.Hour, true)
+	server.SetRefreshTokenCfg(2*time.Hour, 3*time.Hour, true, true, true, true)
 	server.SetExtensionFieldsHandler(authx.NewTokenExtension(authx.UserExtension))
 
 	return
