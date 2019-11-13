@@ -2,9 +2,8 @@ package service
 
 var serviceMap = make(map[string]interface{})
 
-func Register(name string, instance interface{}) error {
+func Register(name string, instance interface{}) {
 	serviceMap[name] = instance
-	return nil
 }
 
 func GetService(name string) (interface{}, bool) {

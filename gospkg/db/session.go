@@ -167,7 +167,7 @@ func (dbs *Session) Count(data interface{}, opts ...StatementOption) (count int6
 
 func (dbs *Session) Close() {
 	if dbs.inTransaction {
-		dbs.Rollback()
+		_ = dbs.Rollback()
 	}
 	dbs.orig.Close()
 }

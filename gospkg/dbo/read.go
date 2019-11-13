@@ -23,7 +23,7 @@ func (fqo FuncQueryOption) Apply() []db.StatementOption {
 type DirectQuery []db.StatementOption
 
 func (dq DirectQuery) Apply() []db.StatementOption {
-	return []db.StatementOption(dq)
+	return dq
 }
 
 type ListInfo struct {

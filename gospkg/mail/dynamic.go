@@ -19,7 +19,7 @@ type Producer interface {
 type DecoratorAsProducer []MessageDecorator
 
 func (dap DecoratorAsProducer) Produce(receiver Receiver, data interface{}) []MessageDecorator {
-	return []MessageDecorator(dap)
+	return dap
 }
 
 func SendDynamicMail(dispatcher Dispatcher, data interface{}, producers ...Producer) {

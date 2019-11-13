@@ -586,13 +586,13 @@ func postUser(w http.ResponseWriter, r *http.Request) {
 
 	task.StartTrail()
 	task.SetField("UserName", userData.Name)
-	if user, err := user.Create(r.Context(), userData); err != nil {
+	if resUser, err := user.Create(r.Context(), userData); err != nil {
 		httprxr.ResponseJSON(w, http.StatusInternalServerError, httprxr.ExceptionMessage(err))
 		task.LogTrailDone(err)
 		return
 	} else {
-		userData.Id = user.Id
-		httprxr.ResponseJSON(w, http.StatusOK, user.Id)
+		userData.Id = resUser.Id
+		httprxr.ResponseJSON(w, http.StatusOK, resUser.Id)
 		task.LogTrailDone(nil)
 	}
 
