@@ -11,7 +11,7 @@ import (
 	"github.com/fidelfly/gox/logx"
 	"github.com/fidelfly/gox/pkg/randx"
 
-	"github.com/fidelfly/fxgos/cmd/service/audit/res"
+	res2 "github.com/fidelfly/fxgos/cmd/service/res"
 	"github.com/fidelfly/gostool/db"
 )
 
@@ -41,7 +41,7 @@ const (
 )
 
 type Task struct {
-	*res.Systrail
+	*res2.Systrail
 	done bool
 }
 
@@ -98,7 +98,7 @@ func _registerTask(code string, operation string) (task *Task, err error) {
 	keyMux.Lock()
 	key := randx.GetUUID(code)
 	task = &Task{
-		Systrail: &res.Systrail{
+		Systrail: &res2.Systrail{
 			Key:       key,
 			Code:      code,
 			Operation: operation,

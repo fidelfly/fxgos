@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/fidelfly/fxgos/cmd/service/api/iam"
+	"github.com/fidelfly/fxgos/cmd/service/api/user"
+
 	"github.com/fidelfly/gox/httprxr"
 	"github.com/fidelfly/gox/pkg/jmap"
 	"github.com/fidelfly/gox/routex"
 
-	"github.com/fidelfly/fxgos/cmd/service/iam"
-	"github.com/fidelfly/fxgos/cmd/service/user"
 	"github.com/fidelfly/gostool/dbo"
 )
 

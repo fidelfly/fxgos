@@ -11,7 +11,7 @@ import (
 	"github.com/fidelfly/gox/logx"
 	"github.com/fidelfly/gox/routex"
 
-	"github.com/fidelfly/fxgos/cmd/service/filedb"
+	"github.com/fidelfly/fxgos/cmd/service/api/filedb"
 )
 
 func FileRoute(router *routex.Router) {

@@ -12,11 +12,10 @@ import (
 	"github.com/fidelfly/gox/logx"
 	"github.com/fidelfly/gox/routex"
 
-	"github.com/fidelfly/fxgos/cmd/service/iam"
-	"github.com/fidelfly/fxgos/cmd/service/iam/iamx"
-	"github.com/fidelfly/fxgos/cmd/service/otk"
-	"github.com/fidelfly/fxgos/cmd/service/user"
-	"github.com/fidelfly/fxgos/cmd/service/user/res"
+	"github.com/fidelfly/fxgos/cmd/service/api/iam"
+	"github.com/fidelfly/fxgos/cmd/service/api/otk"
+	"github.com/fidelfly/fxgos/cmd/service/api/user"
+	"github.com/fidelfly/fxgos/cmd/service/res"
 	"github.com/fidelfly/fxgos/cmd/utilities/auth"
 	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
 	"github.com/fidelfly/fxgos/cmd/utilities/system"
@@ -29,10 +28,10 @@ func UserRoute(router *routex.Router) {
 	rr.Restricted(true)
 
 	resource := "users"
-	accessRight := iam.NewAccessItem(iamx.ResourceFunction, resource, iamx.ActionAccess)
-	createRight := iam.NewAccessItem(iamx.ResourceFunction, resource, iamx.ActionCreate)
-	updateRight := iam.NewAccessItem(iamx.ResourceFunction, resource, iamx.ActionUpdate)
-	deleteRight := iam.NewAccessItem(iamx.ResourceFunction, resource, iamx.ActionDelete)
+	accessRight := iam.NewAccessItem(iam.ResourceFunction, resource, iam.ActionAccess)
+	createRight := iam.NewAccessItem(iam.ResourceFunction, resource, iam.ActionCreate)
+	updateRight := iam.NewAccessItem(iam.ResourceFunction, resource, iam.ActionUpdate)
+	deleteRight := iam.NewAccessItem(iam.ResourceFunction, resource, iam.ActionDelete)
 
 	rr.Methods(http.MethodPost).Path("/password").HandlerFunc(updatePassword)
 	rr.Methods(http.MethodPost).Path("/activeEmail").HandlerFunc(sendActivateMail).Restricted(false)
@@ -465,7 +464,7 @@ func listUserAcl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessItems := iam.ListResourceAclByUser(r.Context(), userID, iamx.ResourceFunction)
+	accessItems := iam.ListResourceAclByUser(r.Context(), userID, iam.ResourceFunction)
 
 	httprxr.ResponseJSON(w, http.StatusOK, accessItems)
 }

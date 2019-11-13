@@ -7,7 +7,6 @@ import (
 
 	"github.com/fidelfly/gox/gosrvx"
 
-	// "github.com/fidelfly/gox/gosrvx"
 	"github.com/fidelfly/gox/confx"
 	"github.com/fidelfly/gox/logx"
 	"github.com/fidelfly/gox/pkg/filex"
@@ -15,14 +14,15 @@ import (
 
 	_ "github.com/fidelfly/fxgos/cmd/obsolete/caches"
 	"github.com/fidelfly/fxgos/cmd/router"
-	"github.com/fidelfly/fxgos/cmd/service/audit"
-	"github.com/fidelfly/fxgos/cmd/service/cron"
-	"github.com/fidelfly/fxgos/cmd/service/filedb"
-	"github.com/fidelfly/fxgos/cmd/service/iam"
-	"github.com/fidelfly/fxgos/cmd/service/otk"
-	"github.com/fidelfly/fxgos/cmd/service/role"
-	"github.com/fidelfly/fxgos/cmd/service/user"
-	"github.com/fidelfly/fxgos/cmd/service/user/res"
+	"github.com/fidelfly/fxgos/cmd/service/api/user"
+	"github.com/fidelfly/fxgos/cmd/service/res"
+	auditSrv "github.com/fidelfly/fxgos/cmd/service/server/audit"
+	cronSrv "github.com/fidelfly/fxgos/cmd/service/server/cron"
+	fileSrv "github.com/fidelfly/fxgos/cmd/service/server/filedb"
+	iamSrv "github.com/fidelfly/fxgos/cmd/service/server/iam"
+	otkSrv "github.com/fidelfly/fxgos/cmd/service/server/otk"
+	roleSrv "github.com/fidelfly/fxgos/cmd/service/server/role"
+	userSrv "github.com/fidelfly/fxgos/cmd/service/server/user"
 	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
 	"github.com/fidelfly/fxgos/cmd/utilities/system"
 	"github.com/fidelfly/gostool/db"
@@ -85,7 +85,7 @@ func StartService() (err error) {
 	}
 
 	//start cron jobs
-	cron.Start()
+	cronSrv.Start()
 
 	// start Server
 	if system.SupportTLS() {
@@ -131,7 +131,7 @@ func initRuntime() error {
 }
 
 func initFunction() (err error) {
-	err = cron.Initialize()
+	err = cronSrv.Initialize()
 	if err != nil {
 		return
 	}
@@ -140,38 +140,38 @@ func initFunction() (err error) {
 	logx.Info("Mail function is initialized.")
 
 	//init file db
-	err = filedb.Initialize()
+	err = fileSrv.Initialize()
 	if err != nil {
 		return
 	}
 	logx.Info("File db is initialized.")
 	//init iam
-	err = iam.Initialize()
+	err = iamSrv.Initialize()
 	if err != nil {
 		return
 	}
 	logx.Info("Iam function is initialized.")
 	//init otk
-	err = otk.Initialize()
+	err = otkSrv.Initialize()
 	if err != nil {
 		return
 	}
 	logx.Info("One-Time-Token function is initialized.")
 
 	//init audit
-	err = audit.Initialize()
+	err = auditSrv.Initialize()
 	if err != nil {
 		return
 	}
 
 	//init user
-	err = user.Initialize()
+	err = userSrv.Initialize()
 	if err != nil {
 		return
 	}
 	logx.Info("User function is initialized.")
 	//init role
-	err = role.Initialize()
+	err = roleSrv.Initialize()
 	if err != nil {
 		return
 	}

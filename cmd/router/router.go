@@ -10,7 +10,7 @@ import (
 	"github.com/fidelfly/gox/routex"
 
 	"github.com/fidelfly/fxgos/cmd/api"
-	"github.com/fidelfly/fxgos/cmd/service/iam"
+	"github.com/fidelfly/fxgos/cmd/service/api/iam"
 	"github.com/fidelfly/fxgos/cmd/utilities/auth"
 	"github.com/fidelfly/fxgos/cmd/utilities/system"
 )

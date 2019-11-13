@@ -12,7 +12,7 @@ Port = 8080
 
 [Database]
 Host = "127.0.0.1"
-Port = "3306"
+Port = 3306
 Schema = "fxgosdb"
 User = "fxgos"
 Password = "fxgos@lyismydg"

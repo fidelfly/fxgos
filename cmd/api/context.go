@@ -7,7 +7,7 @@ import (
 	"github.com/fidelfly/gox/gosrvx"
 	"github.com/fidelfly/gox/httprxr"
 
-	"github.com/fidelfly/fxgos/cmd/service/user"
+	"github.com/fidelfly/fxgos/cmd/service/api/user"
 )
 
 const (

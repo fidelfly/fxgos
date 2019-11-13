@@ -8,10 +8,9 @@ import (
 	"github.com/fidelfly/gox/logx"
 	"github.com/fidelfly/gox/routex"
 
-	"github.com/fidelfly/fxgos/cmd/service/iam"
-	"github.com/fidelfly/fxgos/cmd/service/iam/iamx"
-	"github.com/fidelfly/fxgos/cmd/service/role"
-	"github.com/fidelfly/fxgos/cmd/service/role/res"
+	"github.com/fidelfly/fxgos/cmd/service/api/iam"
+	"github.com/fidelfly/fxgos/cmd/service/api/role"
+	"github.com/fidelfly/fxgos/cmd/service/res"
 	"github.com/fidelfly/fxgos/cmd/utilities/syserr"
 	"github.com/fidelfly/gostool/dbo"
 )
@@ -21,10 +20,10 @@ func RoleRoute(router *routex.Router) {
 	rr.Restricted(true)
 
 	resource := "role"
-	accessRight := iam.NewAccessItem(iamx.ResourceFunction, resource, iamx.ActionAccess)
-	createRight := iam.NewAccessItem(iamx.ResourceFunction, resource, iamx.ActionCreate)
-	updateRight := iam.NewAccessItem(iamx.ResourceFunction, resource, iamx.ActionUpdate)
-	deleteRight := iam.NewAccessItem(iamx.ResourceFunction, resource, iamx.ActionDelete)
+	accessRight := iam.NewAccessItem(iam.ResourceFunction, resource, iam.ActionAccess)
+	createRight := iam.NewAccessItem(iam.ResourceFunction, resource, iam.ActionCreate)
+	updateRight := iam.NewAccessItem(iam.ResourceFunction, resource, iam.ActionUpdate)
+	deleteRight := iam.NewAccessItem(iam.ResourceFunction, resource, iam.ActionDelete)
 	rr.Methods(http.MethodGet).Path("/policy").HandlerFunc(listPolicy).ApplyProps(iamProps(accessRight))
 	rr.Methods(http.MethodGet).Path("/acl").HandlerFunc(listRoleAcl).ApplyProps(iamProps(accessRight))
 	rr.Methods(http.MethodGet).Path("/list").HandlerFunc(listRole).ApplyProps(iamProps(accessRight))
@@ -43,12 +42,12 @@ func listRoleAcl(w http.ResponseWriter, r *http.Request) {
 		httprxr.ResponseJSON(w, http.StatusBadRequest, httprxr.InvalidParamError("role_id"))
 		return
 	}
-	iamPolicys := iam.ListResourceAclByRole(r.Context(), roleId, iamx.ResourceFunction)
+	iamPolicys := iam.ListResourceAclByRole(r.Context(), roleId, iam.ResourceFunction)
 	httprxr.ResponseJSON(w, http.StatusOK, iamPolicys)
 }
 
 func listPolicy(w http.ResponseWriter, r *http.Request) {
-	iamPolicys := iam.ListResourceAclByRole(r.Context(), 0, iamx.ResourceFunction)
+	iamPolicys := iam.ListResourceAclByRole(r.Context(), 0, iam.ResourceFunction)
 	httprxr.ResponseJSON(w, http.StatusOK, iamPolicys)
 }
 

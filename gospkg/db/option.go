@@ -38,6 +38,12 @@ func Table(name string) StatementOption {
 	}
 }
 
+func SQL(query string, args ...interface{}) StatementOption {
+	return func(session *Session) {
+		session.getXorm().SQL(query, args...)
+	}
+}
+
 func ID(id interface{}) StatementOption {
 	return func(session *Session) {
 		session.getXorm().ID(id)
