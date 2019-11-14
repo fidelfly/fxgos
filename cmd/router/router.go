@@ -57,7 +57,7 @@ func Initialize() (err error) {
 
 func AccessMiddleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if userKey := api.GetUserKey(r); len(userKey) > 0 {
+		if userKey := gosrvx.GetUserKey(r); len(userKey) > 0 {
 			if userId, err := strconv.ParseInt(userKey, 10, 64); err == nil {
 				if config, ok := rr.CurrentRouteConfig(r); ok {
 					if ac := config.GetProps(api.AccessConfigKey); ac != nil {

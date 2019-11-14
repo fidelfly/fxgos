@@ -7,6 +7,7 @@ import (
 
 	"github.com/fidelfly/gox"
 	"github.com/fidelfly/gox/cachex/mcache"
+	"github.com/fidelfly/gox/gosrvx"
 	"github.com/fidelfly/gox/httprxr"
 	"github.com/fidelfly/gox/logx"
 	"github.com/fidelfly/gox/pkg/randx"
@@ -64,7 +65,7 @@ func registerTask(code string, operation string, r *http.Request, w http.Respons
 		if userInfo != nil {
 			task.ExecUser = userInfo.Id
 		}
-		requestId := GetRequestId(r)
+		requestId := gosrvx.GetRequestId(r)
 		if len(requestId) > 0 {
 			task.RequestId = requestId
 		}

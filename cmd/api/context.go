@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/fidelfly/gox/gosrvx"
-	"github.com/fidelfly/gox/httprxr"
 
 	"github.com/fidelfly/fxgos/cmd/service/api/user"
 )
@@ -16,7 +15,7 @@ const (
 )
 
 func GetUserInfo(r *http.Request) *user.CacheInfo {
-	userKey := GetUserKey(r)
+	userKey := gosrvx.GetUserKey(r)
 	if len(userKey) > 0 {
 		id, err := strconv.ParseInt(userKey, 10, 64)
 		if err != nil {
@@ -27,27 +26,13 @@ func GetUserInfo(r *http.Request) *user.CacheInfo {
 	return nil
 }
 
-func GetUserKey(r *http.Request) string {
-	userKey := httprxr.ContextGet(r, gosrvx.ContextUserKey)
-	if userKey == nil {
-		return ""
-	}
-	if key, ok := userKey.(string); ok {
-		return key
-	}
-	return ""
+/*func GetUserKey(r *http.Request) string {
+	return gosrvx.GetUserKey(r)
 }
 
 func GetRequestId(r *http.Request) string {
-	reqId := httprxr.ContextGet(r, gosrvx.ContextRequestId)
-	if reqId == nil {
-		return ""
-	}
-	if key, ok := reqId.(string); ok {
-		return key
-	}
-	return ""
-}
+	return gosrvx.GetRequestId(r)
+}*/
 
 /*func ProgressSubscriber(subscribers ...progx.ProgressSubscriber) ctxx.ContextValueHolder {
 	return func(ctx context.Context) context.Context {
