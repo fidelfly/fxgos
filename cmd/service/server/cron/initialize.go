@@ -15,7 +15,7 @@ import (
 )
 
 var myCronx = cronx.New(cronx.WithMiddleware(logJob))
-var s *server
+var s = &server{}
 var jobMap = make(map[string]cronx.Job)
 var runningJobs = make(map[int64]int)
 var runningLock = sync.RWMutex{}
@@ -24,7 +24,6 @@ func Initialize() error {
 	err := db.Synchronize(
 		new(res.CronJob), new(res.JobAudit),
 	)
-	s = &server{}
 	cron.RegisterServer(s)
 	return err
 }
