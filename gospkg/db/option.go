@@ -32,9 +32,9 @@ func Cols(cols ...string) StatementOption {
 	}
 }
 
-func Table(name string) StatementOption {
+func Table(nameOrBean interface{}) StatementOption {
 	return func(session *Session) {
-		session.getXorm().Table(name)
+		session.getXorm().Table(nameOrBean)
 	}
 }
 

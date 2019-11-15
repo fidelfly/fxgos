@@ -12,6 +12,7 @@ import (
 	"github.com/fidelfly/gox/logx"
 	"github.com/fidelfly/gox/routex"
 
+	"github.com/fidelfly/fxgos/cmd/service/api/da"
 	"github.com/fidelfly/fxgos/cmd/service/api/iam"
 	"github.com/fidelfly/fxgos/cmd/service/api/otk"
 	"github.com/fidelfly/fxgos/cmd/service/api/user"
@@ -282,7 +283,9 @@ func listUser(w http.ResponseWriter, r *http.Request) {
 		cond = fmt.Sprintf("status != %d", user.StatusDeleted)
 	}
 
-	list, count, err := user.List(r.Context(), listInfo, cond)
+	list, count, err := user.List(r.Context(), listInfo,
+		da.SgCondition(r.Context(), user.ResourceType, "user"),
+		cond)
 	if err != nil {
 		return
 	}

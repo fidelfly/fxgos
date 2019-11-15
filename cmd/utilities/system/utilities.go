@@ -60,3 +60,7 @@ func GetImagePath(name string) string {
 func GetAssetPath(relativePath string) string {
 	return filepath.Join(Runtime.AssetPath, relativePath)
 }
+
+func GetTemporaryPath(relativePath string) string {
+	return filepath.Join(Runtime.TemporaryPath, relativePath)
+}

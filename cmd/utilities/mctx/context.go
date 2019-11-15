@@ -2,63 +2,71 @@ package mctx
 
 import (
 	"context"
-	"reflect"
-	"strconv"
 
-	"github.com/fidelfly/gox/gosrvx"
+	"github.com/fidelfly/gox/pkg/metax"
 )
 
 func GetUserId(ctx context.Context) int64 {
-	userKey := ctx.Value(gosrvx.ContextUserKey)
-	if userKey == nil {
-		return 0
-	}
-	if key, ok := userKey.(string); ok {
-		id, err := strconv.ParseInt(key, 10, 64)
-		if err == nil {
-			return id
-		}
+	md := GetCallOption(ctx)
+	if v, ok := md.Get(metaCallUser); ok {
+		return v.(int64)
 	}
 	return 0
 }
 
-func FillUserInfo(ctx context.Context, target interface{}) bool {
-	userId := GetUserId(ctx)
-	if userId > 0 {
-		setUserInfo(target, userId)
-		return true
+type callOptionKey struct {
+}
+
+const (
+	metaCallUser     = "meta.callOption.user"
+	metaCallAsSA     = "meta.callOption.asSA"
+	metaCallIgnoreSg = "meta.callOption.ignoreSg"
+)
+
+func WithCallOption(ctx context.Context, options ...metax.MetaOption) context.Context {
+	callOption := metax.Wrap(GetCallOption(ctx), metax.ApplyOption(nil, options...))
+	return context.WithValue(ctx, callOptionKey{}, callOption)
+}
+
+func GetCallOption(ctx context.Context) metax.MetaData {
+	if v := ctx.Value(callOptionKey{}); v != nil {
+		if md, ok := v.(metax.MetaData); ok {
+			return md
+		}
+	}
+
+	return metax.EmptyMD
+}
+
+func CallAsUser(userId int64) metax.MetaOption {
+	return func(md metax.MetaData) metax.MetaData {
+		_ = md.Set(metaCallUser, userId)
+		return md
+	}
+}
+
+func CallAsSA(md metax.MetaData) metax.MetaData {
+	_ = md.Set(metaCallAsSA, true)
+	return md
+}
+
+func CallIgnoreSg(md metax.MetaData) metax.MetaData {
+	_ = md.Set(metaCallIgnoreSg, true)
+	return md
+}
+
+func IsSuperAdmin(ctx context.Context) bool {
+	md := GetCallOption(ctx)
+	if v, ok := md.Get(metaCallAsSA); ok {
+		return v.(bool)
 	}
 	return false
 }
 
-func setUserInfo(target interface{}, userId int64) {
-	v := reflect.ValueOf(target)
-	if v.IsValid() == false {
-		return
+func IsIgnoreSg(ctx context.Context) bool {
+	md := GetCallOption(ctx)
+	if v, ok := md.Get(metaCallIgnoreSg); ok {
+		return v.(bool)
 	}
-
-	if v.Kind() != reflect.Ptr || v.IsNil() {
-		return
-	}
-
-	s := v.Elem()
-	if s.Kind() == reflect.Struct {
-		f := s.FieldByName("CreateUser")
-		if f.IsValid() {
-			if f.CanSet() && f.Kind() == reflect.Int64 {
-				if f.Int() == 0 {
-					f.SetInt(userId)
-				}
-			}
-
-		}
-
-		f = s.FieldByName("UpdateUser")
-		if f.IsValid() {
-			if f.CanSet() && f.Kind() == reflect.Int64 {
-				f.SetInt(userId)
-			}
-
-		}
-	}
+	return false
 }

@@ -11,10 +11,11 @@ import (
 )
 
 type CacheInfo struct {
-	Id    int64
-	Code  string
-	Name  string
-	Email string
+	Id         int64
+	Code       string
+	Name       string
+	Email      string
+	SuperAdmin bool
 }
 
 var myCache = mcache.NewEnsureCache(mcache.DefaultExpiration, 5*time.Minute, userResolver)
@@ -30,10 +31,11 @@ func userResolver(key string) interface{} {
 	}
 
 	return &CacheInfo{
-		Id:    u.Id,
-		Code:  u.Code,
-		Email: u.Email,
-		Name:  u.Name,
+		Id:         u.Id,
+		Code:       u.Code,
+		Email:      u.Email,
+		Name:       u.Name,
+		SuperAdmin: u.SuperAdmin,
 	}
 }
 

@@ -7,11 +7,14 @@ import (
 	"github.com/fidelfly/gox/gosrvx"
 	"github.com/fidelfly/gox/httprxr"
 	"github.com/fidelfly/gox/logx"
+	"github.com/fidelfly/gox/pkg/metax"
 	"github.com/fidelfly/gox/routex"
 
 	"github.com/fidelfly/fxgos/cmd/api"
 	"github.com/fidelfly/fxgos/cmd/service/api/iam"
+	"github.com/fidelfly/fxgos/cmd/service/api/user"
 	"github.com/fidelfly/fxgos/cmd/utilities/auth"
+	"github.com/fidelfly/fxgos/cmd/utilities/mctx"
 	"github.com/fidelfly/fxgos/cmd/utilities/system"
 )
 
@@ -59,6 +62,13 @@ func AccessMiddleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if userKey := gosrvx.GetUserKey(r); len(userKey) > 0 {
 			if userId, err := strconv.ParseInt(userKey, 10, 64); err == nil {
+				callOptions := []metax.MetaOption{mctx.CallAsUser(userId)}
+				if userInfo := user.GetCache(userId); userInfo.Id > 0 {
+					if userInfo.SuperAdmin {
+						callOptions = append(callOptions, mctx.CallAsSA)
+					}
+				}
+				r = r.WithContext(mctx.WithCallOption(r.Context(), callOptions...))
 				if config, ok := rr.CurrentRouteConfig(r); ok {
 					if ac := config.GetProps(api.AccessConfigKey); ac != nil {
 						if ap, ok := ac.(iam.AccessPremise); ok {
