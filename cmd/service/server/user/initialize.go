@@ -11,17 +11,18 @@ import (
 
 var s = &server{}
 
+func (s server) Start() error {
+	return da.RegisterData(&serverKit{&s})
+}
+
 func Initialize() error {
 	if err := db.Synchronize(
 		new(res.User),
 	); err != nil {
 		return err
 	}
-	if err := da.RegisterData(&serverKit{s}); err != nil {
-		return err
-	}
 
-	user.RegisterServer(s)
+	user.RegisterServer(s, da.ServiceName)
 	return nil
 }
 

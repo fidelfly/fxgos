@@ -6,16 +6,18 @@ import (
 	"github.com/fidelfly/gostool/db"
 )
 
+func (s server) Start() error {
+	initSgCache()
+	initDaModel()
+	return nil
+}
+
 func Initialize() error {
 	err := db.Synchronize(
 		new(res.SecurityGroup),
 		new(res.UserSg),
 		new(res.ResourceSg),
 	)
-
-	initSgCache()
-	initDaModel()
-
 	da.RegisterServer(&server{})
 
 	return err

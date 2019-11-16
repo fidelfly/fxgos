@@ -13,8 +13,8 @@ const ServiceName = "service.user"
 
 const ResourceType = "resource.user"
 
-func RegisterServer(server Service) {
-	service.Register(ServiceName, server)
+func RegisterServer(server Service, dependencies ...string) {
+	service.Register(ServiceName, server, dependencies...)
 
 	pub.Subscribe(pub.TopicResource, cacheSubscriber)
 }

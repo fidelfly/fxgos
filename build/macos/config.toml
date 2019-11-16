@@ -9,6 +9,7 @@ Stdout = true
 WebPath = ""
 Debug = true
 Port = 8080
+TemporaryPath = "./data/temp"
 
 [Database]
 Host = "127.0.0.1"
@@ -24,5 +25,5 @@ Password = "fxgos@lyismydg"
     Domain = "https://127.0.0.1:3000"
 
 [TLS]
-CertFile = "../tls/server/server.crt"
-KeyFile = "../tls/server/server.key"
+#CertFile = "../tls/server/server.crt"
+#KeyFile = "../tls/server/server.key"

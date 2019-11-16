@@ -14,10 +14,12 @@ import (
 
 	_ "github.com/fidelfly/fxgos/cmd/obsolete/caches"
 	"github.com/fidelfly/fxgos/cmd/router"
+	"github.com/fidelfly/fxgos/cmd/service"
 	"github.com/fidelfly/fxgos/cmd/service/api/user"
 	"github.com/fidelfly/fxgos/cmd/service/res"
 	auditSrv "github.com/fidelfly/fxgos/cmd/service/server/audit"
 	cronSrv "github.com/fidelfly/fxgos/cmd/service/server/cron"
+	daSrv "github.com/fidelfly/fxgos/cmd/service/server/da"
 	fileSrv "github.com/fidelfly/fxgos/cmd/service/server/filedb"
 	iamSrv "github.com/fidelfly/fxgos/cmd/service/server/iam"
 	otkSrv "github.com/fidelfly/fxgos/cmd/service/server/otk"
@@ -151,6 +153,12 @@ func initFunction() (err error) {
 		return
 	}
 	logx.Info("Iam function is initialized.")
+	//init da
+	err = daSrv.Initialize()
+	if err != nil {
+		return
+	}
+	logx.Info("Data access function is initialized.")
 	//init otk
 	err = otkSrv.Initialize()
 	if err != nil {
@@ -183,7 +191,8 @@ func initFunction() (err error) {
 		return
 	}
 	logx.Info("Router function is initialized.")
-	return err
+
+	return service.Start()
 }
 
 func initData() (err error) {
