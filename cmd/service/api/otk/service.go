@@ -11,8 +11,8 @@ const (
 	ServiceName = "service.otk"
 )
 
-func RegisterServer(server Service) {
-	service.Register(ServiceName, server)
+func RegisterServer(server Service, dependencies ...string) {
+	service.Register(ServiceName, server, dependencies...)
 }
 
 type Service interface {
