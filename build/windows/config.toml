@@ -14,7 +14,7 @@ TemporaryPath = "./data/temporary"
 
 [Database]
 Host = "127.0.0.1"
-Port = "3306"
+Port = 3306
 Schema = "fxgosdb"
 User = "fxgos"
 Password = "fxgos@lyismydg"
@@ -27,8 +27,8 @@ Password = "fxgos@lyismydg"
     Domain = "https://127.0.0.1:3000"
 
 [TLS]
-CertFile = "../tls/server/server.crt"
-KeyFile = "../tls/server/server.key"
+#CertFile = "../tls/server/server.crt"
+#KeyFile = "../tls/server/server.key"
 
 
 [Mail]

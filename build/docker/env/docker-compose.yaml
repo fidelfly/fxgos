@@ -9,3 +9,6 @@ services:
       - ./mysql/data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: fx123gos
+      MYSQL_DATABASE: fxgosdb
+      MYSQL_USER: fxgos
+      MYSQL_PASSWORD: fxgos@lyismydg
