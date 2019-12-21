@@ -16,6 +16,5 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-/build/docker/env/mysql/
-/build/macos/
+/output
 .idea/
