@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	xormc "xorm.io/core"
@@ -15,10 +16,24 @@ type Server struct {
 	Schema   string
 	User     string
 	Password string
+	Params   map[string]interface{}
 }
 
 func (db Server) getUrl() string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&loc=Local", db.User, db.Password, db.Host, db.Port, db.Schema)
+	url := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", db.User, db.Password, db.Host, db.Port, db.Schema)
+	if len(db.Params) > 0 {
+		params := make([]string, 0)
+		for key, val := range db.Params {
+			if len(key) > 0 && val != nil {
+				params = append(params, fmt.Sprintf("%s=%v", key, val))
+			}
+		}
+		if len(params) > 0 {
+			url += "?" + strings.Join(params, "&")
+		}
+	}
+	//return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&loc=Local", db.User, db.Password, db.Host, db.Port, db.Schema)
+	return url
 }
 
 func (db Server) getTarget() string {
