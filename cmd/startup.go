@@ -206,8 +206,8 @@ func initSa() error {
 			_, err = user.Create(context.Background(), &res.User{
 				Code:       "sa",
 				Name:       "Super Administrator",
-				Email:      "fidel.xu@gmail.com",
-				Password:   "valerie",
+				Email:      "xxx@gmail.com",
+				Password:   "xxx",
 				Region:     "Shen Zhen",
 				Status:     user.StatusValid,
 				SuperAdmin: true,
