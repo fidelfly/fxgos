@@ -101,6 +101,7 @@ func (s server) makeMeta(cronJob *res.CronJob) map[string]string {
 	m[cron.MetaJobId] = strconv.FormatInt(cronJob.Id, 10)
 	m[cron.MetaJobCode] = cronJob.Code
 	m[cron.MetaJobType] = cronJob.Type
+	m[cron.MetaJobTraceable] = strconv.FormatBool(cronJob.Traceable)
 	if len(cronJob.Meta) > 0 {
 		for k, v := range cronJob.Meta {
 			m[k] = v

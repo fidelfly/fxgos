@@ -46,6 +46,9 @@ func Start() {
 func logJob(job cronx.Job) cronx.Job {
 	return cronx.FuncJob(func(ctx context.Context) (err error) {
 		md := cronx.GetMetadata(ctx)
+		if !cron.IsTraceable(md) {
+			return job.Run(ctx)
+		}
 		id := cron.GetJobId(md)
 		code := cron.GetJobCode(md)
 		jobType := cron.GetJobType(md)

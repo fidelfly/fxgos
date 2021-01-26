@@ -8,11 +8,8 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fidelfly/gostool v0.0.0
 	github.com/fidelfly/gox v0.0.0
-	github.com/go-sql-driver/mysql v1.4.1
 	github.com/go-xorm/xorm v0.7.9
-	github.com/golang/protobuf v1.3.2
 	github.com/lib/pq v1.1.1 // indirect
-	github.com/sirupsen/logrus v1.4.2
 	github.com/tidwall/buntdb v1.0.0
 	golang.org/x/crypto v0.0.0-20190605123033-f99c8df09eb5 // indirect
 	golang.org/x/net v0.0.0-20190603091049-60506f45cf65 // indirect

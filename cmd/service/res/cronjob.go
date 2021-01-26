@@ -12,6 +12,7 @@ type CronJob struct {
 	OnStartup  bool              // indicate whether this job will run when system start.
 	CreateTime time.Time         `xorm:"created"`
 	Status     int               // cron.JobExpired cron.JobEffective cron.JobInvalid
+	Traceable  bool              `xorm:"default 1"`
 }
 
 type JobAudit struct {

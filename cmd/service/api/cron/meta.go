@@ -7,10 +7,11 @@ import (
 )
 
 const (
-	MetaJobId     = "meta.job.id"
-	MetaJobCode   = "meta.job.code"
-	MetaJobType   = "meta.job.type"
-	MetaJobRunWay = "meta.job.run.way"
+	MetaJobId        = "meta.job.id"
+	MetaJobCode      = "meta.job.code"
+	MetaJobType      = "meta.job.type"
+	MetaJobRunWay    = "meta.job.run.way"
+	MetaJobTraceable = "meta.job.traceable"
 )
 
 func GetJobId(md *cronx.Metadata) int64 {
@@ -34,4 +35,13 @@ func GetJobType(md *cronx.Metadata) string {
 		return v
 	}
 	return ""
+}
+
+func IsTraceable(md *cronx.Metadata) bool {
+	if v, ok := md.Get(MetaJobTraceable); ok {
+		if tv, err := strconv.ParseBool(v); err == nil {
+			return tv
+		}
+	}
+	return false
 }
