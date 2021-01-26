@@ -23,5 +23,5 @@ require (
 
 replace (
 	github.com/fidelfly/gostool => ./gospkg
-	github.com/fidelfly/gox => ../gox
+	github.com/fidelfly/gox => ./gox
 )
